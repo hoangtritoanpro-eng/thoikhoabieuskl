@@ -87,7 +87,7 @@
     .theme-simple td span.sub-text { font-size: 14px; color: #475569; font-weight: 600; }
 
     /* =========================================
-       2. GIAO DIỆN: BẢN INFOGRAPHIC (NỀN VÀNG)
+       2. GIAO DIỆN: BẢN INFOGRAPHIC 
        ========================================= */
     .theme-infographic {
       background-color: #fffde7; 
@@ -103,7 +103,10 @@
     
     .theme-infographic th, .theme-infographic td { 
       border-radius: 15px; padding: 12px 8px; border: 3px solid #0f766e; box-shadow: 4px 4px 0 #0f766e; 
-      text-align: center; font-size: 20px; color: #0f172a; font-weight: 900; 
+      text-align: center; 
+      font-size: 20px; 
+      color: #0f172a; 
+      font-weight: 900; 
     }
     
     .theme-infographic th { background-color: #bae6fd; color: #0f172a; } 
@@ -115,6 +118,7 @@
     .theme-infographic tr td:nth-child(6) { background-color: #ffedd5; } 
     
     .theme-infographic .break-row td { background-color: #0ea5e9 !important; color: white; text-shadow: 2px 2px 0 #0369a1; letter-spacing: 4px; font-size: 22px;}
+    
     .theme-infographic td span.sub-text { font-size: 16px; color: #334155; font-weight: 700; } 
 
     /* Stickers hoạt hình */
@@ -125,6 +129,7 @@
     .d2 { top: 20px; right: 20px; font-size: 55px; } 
     .d3 { bottom: 20px; left: 20px; font-size: 45px; transform: rotate(15deg); } 
     .d4 { bottom: 20px; right: 20px; font-size: 50px; transform: rotate(-10deg); } 
+    
     .d5 { top: 120px; left: 15px; font-size: 35px; transform: rotate(-25deg); } 
     .d6 { top: 120px; right: 15px; font-size: 40px; transform: rotate(20deg); } 
     .d7 { bottom: 220px; left: 15px; font-size: 40px; transform: rotate(-10deg); } 
@@ -286,7 +291,8 @@
             var subject = row[col] ? row[col].toString().trim() : "";
             var teacher = row[col + 1] ? row[col + 1].toString().trim() : "";
 
-            if (mode === 'teacher' && teacher.toLowerCase().includes(currentQuery.toLowerCase())) {
+            // So sánh tuyệt đối để tránh lỗi lọc tên Ngọc và Ngọc Trâm
+            if (mode === 'teacher' && teacher.toLowerCase() === currentQuery.toLowerCase()) {
               var val = `<strong>${className}</strong><br><span class="sub-text">(${subject})</span>`;
               grid[periodVal][currentDay] = grid[periodVal][currentDay] ? grid[periodVal][currentDay] + "<hr style='margin:6px 0; border:0; border-top:1px dashed #cbd5e1;'>" + val : val;
               found = true;
@@ -375,10 +381,9 @@
       ws['!cols'] = [ {wch: 15}, {wch: 18}, {wch: 18}, {wch: 18}, {wch: 18}, {wch: 18} ];
 
       XLSX.utils.book_append_sheet(wb, ws, "TKB");
-      XLSX.writeFile(wb, `TKB_${currentQuery}.xlsx`);
+      XLSX.writeFile(wb, `TKB_SkyLine_${currentQuery}.xlsx`);
     }
 
-    // TÍNH NĂNG TẢI ẢNH TRỰC TIẾP VỀ MÁY
     function downloadImage() {
       var captureDiv = document.getElementById('captureArea');
       var bgColor = currentTheme === 'infographic' ? '#fffde7' : '#ffffff'; 
