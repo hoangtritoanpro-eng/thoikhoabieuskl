@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <!-- Thư viện xử lý Excel và chụp ảnh -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Font chữ: Nunito cho bản chuẩn, Pangolin cho bản Infographic -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Pangolin&display=swap" rel="stylesheet">
+  
+  <style>
+    /* =========================================
+       HIỆU ỨNG ANIMATION SINH ĐỘNG
+       ========================================= */
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+      100% { transform: translateY(0px); }
+    }
+    .floating-icon { display: inline-block; animation: float 3s ease-in-out infinite; }
+    .floating-icon.delay-1 { animation-delay: 0.5s; }
+    .floating-icon.delay-2 { animation-delay: 1s; }
+
+    /* =========================================
+       GIAO DIỆN CHUNG TONE XANH MINT SKYLINE
+       ========================================= */
+    body { 
+      font-family: 'Nunito', sans-serif; margin: 0; padding: 30px 20px; 
+      background-color: #f0fdf4; 
+      background-image: 
+        linear-gradient(to right, rgba(45, 212, 191, 0.2) 1px, transparent 1px), 
+        linear-gradient(to bottom, rgba(45, 212, 191, 0.2) 1px, transparent 1px);
+      background-size: 35px 35px; color: #334155;
+    }
+    body::before {
+      content: ""; position: fixed; top: 0; bottom: 0; left: 50px; width: 3px; background-color: #38bdf8; z-index: -1; 
+    }
+    
+    .container { 
+      max-width: 1000px; margin: 0 auto; background: rgba(255, 255, 255, 0.95); padding: 40px; 
+      border-radius: 25px; box-shadow: 0 15px 35px rgba(20, 184, 166, 0.15); border: 3px solid #ccfbf1;
+      position: relative;
+    }
+    
+    .decal { position: absolute; font-size: 40px; opacity: 0.8; }
+    .decal-1 { top: -15px; left: -15px; transform: rotate(-15deg); }
+    .decal-2 { top: -15px; right: -15px; transform: rotate(15deg); }
+
+    h2 { text-align: center; color: #0f766e; font-size: 32px; font-weight: 900; margin-bottom: 10px; letter-spacing: 1px;}
+    .badge {
+      display: inline-block; background: #ccfbf1; color: #0d9488; padding: 8px 20px; 
+      border-radius: 30px; font-size: 15px; font-weight: 800; border: 2px dashed #14b8a6; margin-bottom: 30px;
+    }
+
+    .control-panel { background: #f8fafc; border: 2px dashed #99f6e4; border-radius: 20px; padding: 30px; margin-bottom: 20px; text-align: center; }
+    input[type="file"] { display: none; }
+    
+    .upload-btn { background-color: #0ea5e9; color: white; padding: 14px 30px; border-radius: 15px; font-weight: 800; cursor: pointer; display: inline-block; transition: 0.3s; box-shadow: 0 6px 15px rgba(14, 165, 233, 0.3); font-size: 17px;}
+    .upload-btn:hover { background-color: #0284c7; transform: translateY(-3px);}
+    
+    .search-box { display: none; gap: 15px; margin-top: 25px; justify-content: center; flex-wrap: wrap; }
+    input[type="text"] { padding: 14px 20px; width: 230px; border: 2px solid #cbd5e1; border-radius: 12px; font-size: 16px; outline: none; font-family: 'Nunito'; font-weight: bold; color: #0f766e; background: #fff;}
+    input[type="text"]:focus { border-color: #14b8a6; background: #f0fdf4; box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.1);}
+    
+    .action-btn { padding: 14px 25px; border: none; border-radius: 12px; background-color: #14b8a6; color: white; font-size: 16px; cursor: pointer; font-weight: 800; transition: 0.3s; box-shadow: 0 6px 15px rgba(20, 184, 166, 0.3);}
+    .action-btn:hover { background-color: #0d9488; transform: translateY(-3px);}
+    .btn-class { background-color: #f43f5e; box-shadow: 0 6px 15px rgba(244, 63, 94, 0.3);}
+    .btn-class:hover { background-color: #e11d48; }
+
+    .theme-toggle { display: none; justify-content: center; gap: 15px; margin-bottom: 25px; align-items: center; background: #f1f5f9; padding: 10px; border-radius: 20px; width: fit-content; margin-left: auto; margin-right: auto;}
+    .t-btn { padding: 10px 25px; border: none; background: transparent; color: #64748b; border-radius: 12px; cursor: pointer; font-weight: 800; font-family: 'Nunito'; font-size: 16px; transition: 0.3s;}
+    .t-btn.active { background: #14b8a6; color: white; box-shadow: 0 4px 10px rgba(20, 184, 166, 0.3); }
+
+    /* =========================================
+       1. GIAO DIỆN: BẢN ĐƠN GIẢN
+       ========================================= */
+    .theme-simple { background: white; padding: 25px; border-radius: 20px; border: 2px solid #ccfbf1; position: relative; }
+    .theme-simple .tkb-title { color: #0f766e; font-size: 28px; font-weight: 900; text-align: center; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; }
+    .theme-simple .info-subtitle { display: none; }
+    .theme-simple .doodle { display: none; }
+    .theme-simple table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 15px; overflow: hidden; border: 2px solid #ccfbf1; position: relative; z-index: 2;}
+    .theme-simple th, .theme-simple td { border: 1px solid #ccfbf1; padding: 15px 10px; text-align: center; }
+    .theme-simple th { color: #fff; font-weight: 800; font-size: 17px; background: #14b8a6; }
+    .theme-simple td { font-size: 16px; line-height: 1.5; color: #1e293b; font-weight: 800; background: #fff;}
+    .theme-simple .time-col { color: #0f766e; background: #f0fdf4;} 
+    .theme-simple .break-row td { background-color: #f1f5f9; font-weight: 900; color: #64748b; letter-spacing: 3px; font-size: 14px;}
+    .theme-simple td span.sub-text { font-size: 14px; color: #475569; font-weight: 600; }
+
+    /* =========================================
+       2. GIAO DIỆN: BẢN INFOGRAPHIC (NỀN VÀNG)
+       ========================================= */
+    .theme-infographic {
+      background-color: #fffde7; 
+      background-image: linear-gradient(#fde68a 2px, transparent 2px), linear-gradient(90deg, #fde68a 2px, transparent 2px); 
+      background-size: 30px 30px;
+      padding: 65px 50px; 
+      border: 4px solid #0f766e; border-radius: 20px; font-family: 'Pangolin', cursive; position: relative; overflow: hidden;
+    }
+    .theme-infographic .tkb-title { text-align: center; font-size: 45px; color: #0f766e; margin: 0 0 5px 0; text-shadow: 3px 3px 0px #ccfbf1; position: relative; z-index: 2;}
+    .theme-infographic .info-subtitle { text-align: center; font-size: 20px; color: #115e59; margin-bottom: 30px; position: relative; z-index: 2;}
+    
+    .theme-infographic table { width: 100%; border-collapse: separate; border-spacing: 12px; position: relative; z-index: 2;}
+    
+    .theme-infographic th, .theme-infographic td { 
+      border-radius: 15px; padding: 12px 8px; border: 3px solid #0f766e; box-shadow: 4px 4px 0 #0f766e; 
+      text-align: center; font-size: 20px; color: #0f172a; font-weight: 900; 
+    }
+    
+    .theme-infographic th { background-color: #bae6fd; color: #0f172a; } 
+    .theme-infographic .time-col { background-color: #ffe4e6; color: #9f1239; font-weight: 900;} 
+    .theme-infographic tr td:nth-child(2) { background-color: #ecfdf5; } 
+    .theme-infographic tr td:nth-child(3) { background-color: #fef9c3; } 
+    .theme-infographic tr td:nth-child(4) { background-color: #f0fdfa; } 
+    .theme-infographic tr td:nth-child(5) { background-color: #f3e8ff; } 
+    .theme-infographic tr td:nth-child(6) { background-color: #ffedd5; } 
+    
+    .theme-infographic .break-row td { background-color: #0ea5e9 !important; color: white; text-shadow: 2px 2px 0 #0369a1; letter-spacing: 4px; font-size: 22px;}
+    .theme-infographic td span.sub-text { font-size: 16px; color: #334155; font-weight: 700; } 
+
+    /* Stickers hoạt hình */
+    .doodle { display: none; }
+    .theme-infographic .doodle { display: block; position: absolute; z-index: 1; user-select: none; }
+    
+    .d1 { top: 20px; left: 20px; font-size: 45px; transform: rotate(-15deg); } 
+    .d2 { top: 20px; right: 20px; font-size: 55px; } 
+    .d3 { bottom: 20px; left: 20px; font-size: 45px; transform: rotate(15deg); } 
+    .d4 { bottom: 20px; right: 20px; font-size: 50px; transform: rotate(-10deg); } 
+    .d5 { top: 120px; left: 15px; font-size: 35px; transform: rotate(-25deg); } 
+    .d6 { top: 120px; right: 15px; font-size: 40px; transform: rotate(20deg); } 
+    .d7 { bottom: 220px; left: 15px; font-size: 40px; transform: rotate(-10deg); } 
+    .d8 { bottom: 220px; right: 15px; font-size: 45px; transform: rotate(15deg); } 
+
+    /* Tool khu vực tải */
+    .tools { display: none; justify-content: center; gap: 15px; margin-top: 30px; }
+    .btn-excel { background-color: #10b981; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);}
+    .btn-excel:hover { background-color: #059669; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="decal decal-1 floating-icon delay-1">✨</div>
+    <div class="decal decal-2 floating-icon delay-2">🪴</div>
+
+    <h2>🏫 THỜI KHÓA BIỂU SKY-LINE</h2>
+    <div style="text-align: center;"><div class="badge">🌟 Không Gian Tiện Ích Giáo Viên Skyline 🌟</div></div>
+    
+    <div class="control-panel">
+      <label for="excelUpload" class="upload-btn">☁️ Tải lên File TKB Gốc (Excel)</label>
+      <input type="file" id="excelUpload" accept=".xlsx, .xls" />
+      <div id="uploadStatus" style="margin-top: 18px; font-weight: 800; color: #0f766e; font-size: 16px;">👋 Xin chào! Hãy tải file Excel TKB lên nhé.</div>
+
+      <div class="search-box" id="searchBox">
+        <input type="text" id="teacherInput" placeholder="Tên Giáo viên..." list="teacherList">
+        <datalist id="teacherList"></datalist>
+        <button class="action-btn" onclick="processSearch('teacher')">👨‍🏫 Tra GV</button>
+        
+        <input type="text" id="classInput" placeholder="Tên Lớp..." list="classList">
+        <datalist id="classList"></datalist>
+        <button class="action-btn btn-class" onclick="processSearch('class')">🎒 Tra Lớp</button>
+      </div>
+    </div>
+
+    <div class="theme-toggle" id="themeToggle">
+      <button id="btnSimple" class="t-btn active" onclick="switchTheme('simple')">📄 Bản Chuẩn</button>
+      <button id="btnInfo" class="t-btn" onclick="switchTheme('infographic')">🎨 Bản Sketchnote</button>
+    </div>
+
+    <!-- Khung Render TKB -->
+    <div id="captureContainer" style="display:none;">
+      <div id="captureArea" class="theme-simple">
+        <div class="doodle d1 floating-icon">📚</div>
+        <div class="doodle d2 floating-icon delay-1">🌈</div>
+        <div class="doodle d3 floating-icon delay-2">🌱</div>
+        <div class="doodle d4 floating-icon">🚀</div>
+        <div class="doodle d5 floating-icon delay-1">⭐</div>
+        <div class="doodle d6 floating-icon">💡</div>
+        <div class="doodle d7 floating-icon delay-2">✏️</div>
+        <div class="doodle d8 floating-icon delay-1">📐</div>
+
+        <h1 class="tkb-title" id="displayTitle">THỜI KHÓA BIỂU</h1>
+        <div class="info-subtitle" id="displaySubtitle"></div>
+        <div id="printContent"></div>
+      </div>
+    </div>
+    
+    <!-- Tools -->
+    <div class="tools" id="exportTools">
+      <button class="action-btn" id="btnSaveImg" onclick="downloadImage()">🖼️ Lưu Infographic</button>
+      <button class="action-btn btn-excel" onclick="exportSimpleExcel()">📗 Tải Excel Siêu Gọn</button>
+    </div>
+  </div>
+
+  <script>
+    let excelData = [];
+    let classesMap = {};
+    let currentQuery = "";
+    let currentMode = "";
+    let currentResultGrid = null; 
+    let classRowIndex = -1; 
+    let dataStartIndex = -1; 
+    let currentTheme = 'simple';
+    
+    document.getElementById('excelUpload').addEventListener('change', function(e) {
+      var file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('uploadStatus').innerHTML = "<span class='floating-icon'>⏳</span> Đang phân tích dữ liệu...";
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var data = new Uint8Array(e.target.result);
+        var workbook = XLSX.read(data, {type: 'array'});
+        var firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+        excelData = XLSX.utils.sheet_to_json(firstSheet, {header: 1, defval: ""});
+        extractLists();
+      };
+      reader.readAsArrayBuffer(file);
+    });
+
+    function extractLists() {
+      var teachers = new Set();
+      var classesList = [];
+      classesMap = {};
+      classRowIndex = -1;
+      dataStartIndex = -1;
+
+      for (var r = 0; r < Math.min(15, excelData.length); r++) {
+        var row = excelData[r] || [];
+        for (var c = 0; c < row.length; c++) {
+          if (row[c] && row[c].toString().trim() === "Lớp") {
+            classRowIndex = r; break;
+          }
+        }
+        if (classRowIndex !== -1) break;
+      }
+      if (classRowIndex === -1) {
+        alert("Không nhận diện được cấu trúc file. Không tìm thấy hàng chữ 'Lớp'."); return;
+      }
+
+      dataStartIndex = classRowIndex + 3; 
+      var classRow = excelData[classRowIndex] || [];
+      for (var c = 4; c < classRow.length; c += 3) {
+        var className = classRow[c] ? classRow[c].toString().trim().toUpperCase() : "";
+        if (className === "ĐI CƠ SỞ 4 / TIỂU HỌC") break;
+        if (className !== "") { classesMap[c] = className; classesList.push(className); }
+      }
+
+      for (var r = dataStartIndex; r < excelData.length; r++) {
+        var row = excelData[r] || [];
+        for (var c = 5; c < row.length; c += 3) {
+          var teacher = row[c] ? row[c].toString().trim() : "";
+          if (teacher !== "") teachers.add(teacher);
+        }
+      }
+
+      document.getElementById('teacherList').innerHTML = Array.from(teachers).sort().map(t => `<option value="${t}">`).join('');
+      document.getElementById('classList').innerHTML = classesList.map(c => `<option value="${c}">`).join('');
+      document.getElementById('uploadStatus').innerText = "✅ Tải dữ liệu thành công! Mời tra cứu bên dưới.";
+      document.getElementById('searchBox').style.display = "flex";
+    }
+
+    function processSearch(mode) {
+      currentMode = mode;
+      currentQuery = mode === 'teacher' ? document.getElementById('teacherInput').value.trim() : document.getElementById('classInput').value.trim().toUpperCase();
+      if (!currentQuery) { alert("Vui lòng nhập từ khóa!"); return; }
+      if (classRowIndex === -1) { alert("Dữ liệu chưa được tải đúng."); return; }
+
+      var periods = ["1", "2", "3", "4", "5", "6", "7", "8"];
+      var days = ["Hai", "Ba", "Tư", "Năm", "Sáu"];
+      var grid = {}; var timeMap = {};
+      periods.forEach(p => grid[p] = {"Hai": "", "Ba": "", "Tư": "", "Năm": "", "Sáu": ""});
+      
+      var currentDay = ""; var found = false;
+
+      for (var r = dataStartIndex; r < excelData.length; r++) {
+        var row = excelData[r] || [];
+        var dayVal = row[1] ? row[1].toString().trim() : "";
+        if (dayVal !== "" && days.includes(dayVal)) currentDay = dayVal;
+        
+        var timeVal = row[2] ? row[2].toString().trim() : "";
+        var periodVal = row[3] ? row[3].toString().trim() : "";
+        if (periodVal && timeVal && !timeMap[periodVal]) timeMap[periodVal] = timeVal;
+
+        if (currentDay && periodVal && grid[periodVal]) {
+          for (var colIndex in classesMap) {
+            var col = parseInt(colIndex);
+            var className = classesMap[col];
+            var subject = row[col] ? row[col].toString().trim() : "";
+            var teacher = row[col + 1] ? row[col + 1].toString().trim() : "";
+
+            if (mode === 'teacher' && teacher.toLowerCase().includes(currentQuery.toLowerCase())) {
+              var val = `<strong>${className}</strong><br><span class="sub-text">(${subject})</span>`;
+              grid[periodVal][currentDay] = grid[periodVal][currentDay] ? grid[periodVal][currentDay] + "<hr style='margin:6px 0; border:0; border-top:1px dashed #cbd5e1;'>" + val : val;
+              found = true;
+            } else if (mode === 'class' && className === currentQuery && subject !== "") {
+              var val = `<strong>${subject}</strong><br><span class="sub-text">(${teacher})</span>`;
+              grid[periodVal][currentDay] = grid[periodVal][currentDay] ? grid[periodVal][currentDay] + "<hr style='margin:6px 0; border:0; border-top:1px dashed #cbd5e1;'>" + val : val;
+              found = true;
+            }
+          }
+        }
+      }
+
+      if (!found) { alert("Không tìm thấy dữ liệu cho khóa tìm kiếm này."); return; }
+      currentResultGrid = { grid, timeMap, periods, days };
+      renderTable();
+    }
+
+    function switchTheme(themeType) {
+      currentTheme = themeType;
+      var captureArea = document.getElementById('captureArea');
+      
+      document.getElementById('btnSimple').classList.remove('active');
+      document.getElementById('btnInfo').classList.remove('active');
+      
+      if(themeType === 'simple') {
+        document.getElementById('btnSimple').classList.add('active');
+        captureArea.className = 'theme-simple';
+        document.getElementById('displayTitle').innerText = `TKB: ${currentQuery.toUpperCase()}`;
+        document.getElementById('btnSaveImg').innerText = "🖼️ Lưu Ảnh TKB";
+      } else {
+        document.getElementById('btnInfo').classList.add('active');
+        captureArea.className = 'theme-infographic';
+        document.getElementById('displayTitle').innerText = `THỜI KHÓA BIỂU`;
+        document.getElementById('displaySubtitle').innerHTML = `Hệ Thống Giáo Dục Sky-Line • Lịch của: <strong>${currentQuery.toUpperCase()}</strong>`;
+        document.getElementById('btnSaveImg').innerText = "🎨 Lưu Infographic";
+      }
+    }
+
+    function renderTable() {
+      switchTheme(currentTheme); 
+      
+      var { grid, timeMap, periods, days } = currentResultGrid;
+      var html = '<table><tr><th style="width: 120px;">Tiết/Thứ</th><th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th><th>Thứ 5</th><th>Thứ 6</th></tr>';
+      
+      periods.forEach(p => {
+        var timeStr = timeMap[p] ? `<br><span class="sub-text">(${timeMap[p]})</span>` : '';
+        html += `<tr><td class="time-col">Tiết ${p}${timeStr}</td>`;
+        days.forEach(d => {
+          html += `<td>${grid[p][d]}</td>`;
+        });
+        html += '</tr>';
+        if (p === "4") html += '<tr class="break-row"><td colspan="6">⭐ NGHỈ TRƯA ⭐</td></tr>';
+      });
+      
+      html += '</table>';
+      document.getElementById('printContent').innerHTML = html;
+      
+      document.getElementById('themeToggle').style.display = 'flex';
+      document.getElementById('captureContainer').style.display = 'block';
+      document.getElementById('exportTools').style.display = 'flex';
+    }
+
+    function exportSimpleExcel() {
+      var { grid, timeMap, periods, days } = currentResultGrid;
+      var aoa = [["Tiết / Thứ", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6"]];
+      
+      periods.forEach(p => {
+        var row = [];
+        var timeStr = timeMap[p] ? `(${timeMap[p]})` : "";
+        row.push(`Tiết ${p}\n${timeStr}`);
+        
+        days.forEach(d => {
+          var textVal = grid[p][d].replace(/<strong>/g, "").replace(/<\/strong>/g, "")
+                                  .replace(/<span.*?>/g, "").replace(/<\/span>/g, "")
+                                  .replace(/<hr.*?>/g, "\n---\n").replace(/<br>/g, "\n");
+          row.push(textVal);
+        });
+        
+        aoa.push(row);
+        if (p === "4") aoa.push(["GIỜ NGHỈ TRƯA", null, null, null, null, null]);
+      });
+
+      var wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws['!merges'] = [ { s: { r: 5, c: 0 }, e: { r: 5, c: 5 } } ]; 
+      ws['!cols'] = [ {wch: 15}, {wch: 18}, {wch: 18}, {wch: 18}, {wch: 18}, {wch: 18} ];
+
+      XLSX.utils.book_append_sheet(wb, ws, "TKB");
+      XLSX.writeFile(wb, `TKB_${currentQuery}.xlsx`);
+    }
+
+    // TÍNH NĂNG TẢI ẢNH TRỰC TIẾP VỀ MÁY
+    function downloadImage() {
+      var captureDiv = document.getElementById('captureArea');
+      var bgColor = currentTheme === 'infographic' ? '#fffde7' : '#ffffff'; 
+      
+      var icons = document.querySelectorAll('.floating-icon');
+      icons.forEach(i => i.style.animation = 'none');
+
+      html2canvas(captureDiv, { scale: 2, backgroundColor: bgColor }).then(canvas => {
+        icons.forEach(i => i.style.animation = '');
+        
+        var base64Data = canvas.toDataURL("image/png");
+        var link = document.createElement('a');
+        link.download = `TKB_SkyLine_${currentQuery}.png`;
+        link.href = base64Data;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
+    }
+  </script>
+</body>
+</html>
