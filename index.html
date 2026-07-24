@@ -68,7 +68,6 @@
     .theme-simple th { color: #fff; font-weight: 800; font-size: 17px; background: #14b8a6; }
     .theme-simple td { font-size: 16px; line-height: 1.5; color: #1e293b; font-weight: 800; background: #fff;}
     .theme-simple .time-col { color: #0f766e; background: #f0fdf4;} 
-    /* Màu nghỉ trưa đã được làm nổi bật */
     .theme-simple .break-row td { background-color: #fef3c7; font-weight: 900; color: #d97706; letter-spacing: 3px; font-size: 15px;}
     .theme-simple .break-small td { background-color: #ffedd5; color: #c2410c; letter-spacing: 2px; font-size: 14px;}
     .theme-simple td span.sub-text { font-size: 14px; color: #475569; font-weight: 600; }
@@ -92,7 +91,6 @@
     .theme-infographic .break-small td { background-color: #fde047 !important; color: #854d0e; text-shadow: none; letter-spacing: 2px; font-size: 18px;}
     .theme-infographic td span.sub-text { font-size: 16px; color: #334155; font-weight: 700; } 
     
-    /* Doodle stickers cho Sketchnote */
     .doodle { display: none; }
     .theme-infographic .doodle { display: block; position: absolute; z-index: 1; user-select: none; }
     .d1 { top: 20px; left: 20px; font-size: 45px; transform: rotate(-15deg); } 
@@ -177,7 +175,6 @@
       </div>
     </div>
 
-    <!-- CẬP NHẬT MENU GIAO DIỆN -->
     <div class="theme-toggle" id="themeToggle">
       <button id="btnSimple" class="t-btn active" onclick="switchTheme('simple')">📄 Bản Chuẩn</button>
       <button id="btnInfo" class="t-btn" onclick="switchTheme('infographic')">🎨 Bản Sketchnote</button>
@@ -327,26 +324,32 @@
                       if (localClassesMap[c]) continue; 
                       
                       let rawVal = row[c];
-                      let val = rawVal ? rawVal.toString().trim() : "";
+                      if (rawVal === undefined || rawVal === null || rawVal === "") continue;
+                      
+                      let val = rawVal.toString().trim();
                       
                       if (typeof rawVal === 'number' && rawVal > 40000 && rawVal < 50000) {
                           val = ExcelDateToJSDate(rawVal);
                       }
 
-                      if (val.toUpperCase().includes("LỚP")) {
-                          val = val.split('\n')[0].toUpperCase().replace(/L[ỚO]P/g, "").trim();
+                      let upperVal = val.toUpperCase();
+                      if (upperVal.includes("LỚP") || upperVal.includes("KHỐI")) {
+                          val = upperVal.split('\n')[0].replace(/L[ỚO]P/g, "").replace(/KH[ỐO]I/g, "").trim();
                       }
                       
                       let dMatch1 = val.match(/^20\d{2}[\/\-](\d{1,2})[\/\-](\d{1,2})/); 
                       let dMatch2 = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-]20\d{2}/); 
-                      if (dMatch1) val = parseInt(dMatch1[1]) + "/" + parseInt(dMatch1[2]); 
-                      else if (dMatch2) val = parseInt(dMatch2[2]) + "/" + parseInt(dMatch2[1]);
+                      if (dMatch1) val = parseInt(dMatch1[2]) + "/" + parseInt(dMatch1[1]); 
+                      else if (dMatch2) val = parseInt(dMatch2[1]) + "/" + parseInt(dMatch2[2]);
                       
-                      val = val.replace(/\./g, "/");
+                      // Ép đổi tất cả dấu chấm, gạch ngang thành xuyệt (vd: 4.5 -> 4/5)
+                      val = val.replace(/[\.\-]/g, "/");
+                      // Xóa bỏ khoảng trắng xung quanh dấu xuyệt (vd: 4 / 5 -> 4/5)
+                      val = val.replace(/\s*\/\s*/g, "/");
 
                       let isValidClass = /^([1-9]|1[0-2])(?!\d)/i.test(val);
                       
-                      if (isValidClass && !val.includes("CN:")) {
+                      if (isValidClass && !val.toUpperCase().includes("CN:")) {
                           localClassesMap[c] = val.toUpperCase();
                           classesSet.add(val.toUpperCase());
                       }
@@ -523,8 +526,9 @@
             }
         } 
         else if (mode === 'class') {
-            let normalizedQuery = currentQuery.replace(/[\.\-]/g, "/");
-            let normalizedClass = event.className.replace(/[\.\-]/g, "/");
+            // Chuyển đổi mọi định dạng 4.5, 4-5, 4/5 thành chuẩn 4/5 để so sánh
+            let normalizedQuery = currentQuery.replace(/\s*[\.\-]\s*/g, "/").toUpperCase();
+            let normalizedClass = event.className.replace(/\s*[\.\-]\s*/g, "/").toUpperCase();
             if (normalizedClass === normalizedQuery && event.subject !== "") {
                 isMatch = true;
             }
@@ -561,10 +565,7 @@
       currentTheme = themeType;
       var captureArea = document.getElementById('captureArea');
       
-      // Xóa active tất cả các nút
       document.querySelectorAll('.t-btn').forEach(btn => btn.classList.remove('active'));
-      
-      // Kích hoạt class giao diện tương ứng
       captureArea.className = 'theme-' + themeType;
       
       if(themeType === 'simple') {
@@ -654,7 +655,6 @@
     function downloadImage() {
       var captureDiv = document.getElementById('captureArea');
       
-      // Bản đồ màu nền xuất ảnh tương ứng với từng Theme
       var bgColorMap = {
           'simple': '#ffffff',
           'infographic': '#fffde7',
