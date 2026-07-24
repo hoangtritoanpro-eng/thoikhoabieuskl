@@ -44,16 +44,21 @@
     .btn-class { background-color: #f43f5e; box-shadow: 0 6px 15px rgba(244, 63, 94, 0.3);}
     .btn-class:hover { background-color: #e11d48; }
 
-    .theme-toggle { display: none; justify-content: center; gap: 15px; margin-bottom: 25px; align-items: center; background: #f1f5f9; padding: 10px; border-radius: 20px; width: fit-content; margin-left: auto; margin-right: auto;}
-    .t-btn { padding: 10px 25px; border: none; background: transparent; color: #64748b; border-radius: 12px; cursor: pointer; font-weight: 800; font-family: 'Nunito'; font-size: 16px; transition: 0.3s;}
+    /* MENU CHỌN GIAO DIỆN */
+    .theme-toggle { display: none; justify-content: center; gap: 10px; margin-bottom: 25px; align-items: center; background: #f1f5f9; padding: 10px; border-radius: 20px; width: fit-content; margin-left: auto; margin-right: auto; flex-wrap: wrap;}
+    .t-btn { padding: 10px 20px; border: none; background: transparent; color: #64748b; border-radius: 12px; cursor: pointer; font-weight: 800; font-family: 'Nunito'; font-size: 15px; transition: 0.3s;}
     .t-btn.active { background: #14b8a6; color: white; box-shadow: 0 4px 10px rgba(20, 184, 166, 0.3); }
 
     /* HIỆU ỨNG TƯƠNG TÁC KHI SỬA THỦ CÔNG */
     .editable-cell { transition: all 0.2s ease; outline: none; border-radius: 8px;}
-    .editable-cell:hover { background-color: rgba(255, 255, 255, 0.8) !important; cursor: text; box-shadow: inset 0 0 8px rgba(20, 184, 166, 0.3);}
+    .editable-cell:hover { background-color: rgba(255, 255, 255, 0.8) !important; cursor: text; box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.1);}
     .editable-cell:focus { background-color: #ffffff !important; box-shadow: inset 0 0 0 2px #0ea5e9;}
 
-    /* GIAO DIỆN BẢN ĐƠN GIẢN */
+    /* ==================================================
+       BỘ SƯU TẬP 5 GIAO DIỆN (THEMES)
+       ================================================== */
+       
+    /* 1. GIAO DIỆN BẢN CHUẨN (XANH MINT) */
     .theme-simple { background: white; padding: 25px; border-radius: 20px; border: 2px solid #ccfbf1; position: relative; }
     .theme-simple .tkb-title { color: #0f766e; font-size: 28px; font-weight: 900; text-align: center; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; }
     .theme-simple .info-subtitle { display: none; }
@@ -63,18 +68,18 @@
     .theme-simple th { color: #fff; font-weight: 800; font-size: 17px; background: #14b8a6; }
     .theme-simple td { font-size: 16px; line-height: 1.5; color: #1e293b; font-weight: 800; background: #fff;}
     .theme-simple .time-col { color: #0f766e; background: #f0fdf4;} 
-    .theme-simple .break-row td { background-color: #f1f5f9; font-weight: 900; color: #64748b; letter-spacing: 3px; font-size: 14px;}
-    .theme-simple .break-small td { background-color: #fef9c3; color: #a16207; letter-spacing: 2px; font-size: 13px;}
+    /* Màu nghỉ trưa đã được làm nổi bật */
+    .theme-simple .break-row td { background-color: #fef3c7; font-weight: 900; color: #d97706; letter-spacing: 3px; font-size: 15px;}
+    .theme-simple .break-small td { background-color: #ffedd5; color: #c2410c; letter-spacing: 2px; font-size: 14px;}
     .theme-simple td span.sub-text { font-size: 14px; color: #475569; font-weight: 600; }
 
-    /* GIAO DIỆN BẢN INFOGRAPHIC NỀN VÀNG */
+    /* 2. GIAO DIỆN BẢN SKETCHNOTE (VÀNG SÁNG TẠO) */
     .theme-infographic {
       background-color: #fffde7; background-image: linear-gradient(#fde68a 2px, transparent 2px), linear-gradient(90deg, #fde68a 2px, transparent 2px); background-size: 30px 30px; padding: 65px 50px; border: 4px solid #0f766e; border-radius: 20px; font-family: 'Pangolin', cursive; position: relative; overflow: hidden;
     }
     .theme-infographic .tkb-title { text-align: center; font-size: 45px; color: #0f766e; margin: 0 0 5px 0; text-shadow: 3px 3px 0px #ccfbf1; position: relative; z-index: 2;}
     .theme-infographic .info-subtitle { text-align: center; font-size: 20px; color: #115e59; margin-bottom: 30px; position: relative; z-index: 2;}
     .theme-infographic table { width: 100%; border-collapse: separate; border-spacing: 12px; position: relative; z-index: 2;}
-    
     .theme-infographic th, .theme-infographic td { border-radius: 15px; padding: 12px 8px; border: 3px solid #0f766e; box-shadow: 4px 4px 0 #0f766e; text-align: center; font-size: 20px; color: #0f172a; font-weight: 900; background: #fff;}
     .theme-infographic th { background-color: #bae6fd; color: #0f172a; } 
     .theme-infographic .time-col { background-color: #ffe4e6; color: #9f1239; font-weight: 900;} 
@@ -83,11 +88,11 @@
     .theme-infographic tr td:nth-child(4) { background-color: #f0fdfa; } 
     .theme-infographic tr td:nth-child(5) { background-color: #f3e8ff; } 
     .theme-infographic tr td:nth-child(6) { background-color: #ffedd5; } 
-    
-    .theme-infographic .break-row td { background-color: #0ea5e9 !important; color: white; text-shadow: 2px 2px 0 #0369a1; letter-spacing: 4px; font-size: 22px;}
-    .theme-infographic .break-small td { background-color: #fef08a !important; color: #854d0e; text-shadow: none; letter-spacing: 2px; font-size: 18px;}
+    .theme-infographic .break-row td { background-color: #fb923c !important; color: white; text-shadow: 2px 2px 0 #c2410c; letter-spacing: 4px; font-size: 22px;}
+    .theme-infographic .break-small td { background-color: #fde047 !important; color: #854d0e; text-shadow: none; letter-spacing: 2px; font-size: 18px;}
     .theme-infographic td span.sub-text { font-size: 16px; color: #334155; font-weight: 700; } 
-
+    
+    /* Doodle stickers cho Sketchnote */
     .doodle { display: none; }
     .theme-infographic .doodle { display: block; position: absolute; z-index: 1; user-select: none; }
     .d1 { top: 20px; left: 20px; font-size: 45px; transform: rotate(-15deg); } 
@@ -98,6 +103,48 @@
     .d6 { top: 120px; right: 15px; font-size: 40px; transform: rotate(20deg); } 
     .d7 { bottom: 220px; left: 15px; font-size: 40px; transform: rotate(-10deg); } 
     .d8 { bottom: 220px; right: 15px; font-size: 45px; transform: rotate(15deg); } 
+
+    /* 3. GIAO DIỆN CHUYÊN NGHIỆP (XANH NAVY) */
+    .theme-blue { background: #f8fafc; padding: 25px; border-radius: 20px; border: 2px solid #bae6fd; position: relative; }
+    .theme-blue .tkb-title { color: #0369a1; font-size: 28px; font-weight: 900; text-align: center; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px;}
+    .theme-blue .info-subtitle { display: none; }
+    .theme-blue .doodle { display: none; }
+    .theme-blue table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 12px; overflow: hidden; border: 2px solid #bae6fd; position: relative; z-index: 2;}
+    .theme-blue th, .theme-blue td { border: 1px solid #e0f2fe; padding: 15px 10px; text-align: center; }
+    .theme-blue th { color: #fff; font-weight: 800; font-size: 17px; background: #0284c7; }
+    .theme-blue td { font-size: 16px; line-height: 1.5; color: #0f172a; font-weight: 800; background: #fff;}
+    .theme-blue .time-col { color: #0284c7; background: #f0f9ff;} 
+    .theme-blue .break-row td { background-color: #bfdbfe; font-weight: 900; color: #075985; letter-spacing: 3px; font-size: 15px;}
+    .theme-blue .break-small td { background-color: #e0f2fe; color: #0284c7; letter-spacing: 2px; font-size: 14px;}
+    .theme-blue td span.sub-text { font-size: 14px; color: #64748b; font-weight: 600; }
+
+    /* 4. GIAO DIỆN KẸO NGỌT (HỒNG PASTEL) */
+    .theme-pink { background: #fdf2f8; padding: 25px; border-radius: 20px; border: 3px dashed #fbcfe8; position: relative; }
+    .theme-pink .tkb-title { color: #be185d; font-size: 30px; font-weight: 900; text-align: center; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; font-family: 'Pangolin', cursive;}
+    .theme-pink .info-subtitle { display: none; }
+    .theme-pink .doodle { display: none; }
+    .theme-pink table { width: 100%; border-collapse: separate; border-spacing: 5px; position: relative; z-index: 2;}
+    .theme-pink th, .theme-pink td { border-radius: 10px; padding: 15px 10px; text-align: center; }
+    .theme-pink th { color: #fff; font-weight: 800; font-size: 18px; background: #f472b6; }
+    .theme-pink td { font-size: 16px; line-height: 1.5; color: #831843; font-weight: 800; background: #fff; border: 2px solid #fce7f3;}
+    .theme-pink .time-col { color: #be185d; background: #fce7f3;} 
+    .theme-pink .break-row td { background-color: #fbcfe8; font-weight: 900; color: #9d174d; letter-spacing: 3px; font-size: 15px; border: none;}
+    .theme-pink .break-small td { background-color: #fce7f3; color: #be185d; letter-spacing: 2px; font-size: 14px; border: none;}
+    .theme-pink td span.sub-text { font-size: 14px; color: #9d174d; font-weight: 600; }
+
+    /* 5. GIAO DIỆN THIÊN NHIÊN (XANH LÁ MỘC) */
+    .theme-nature { background: #fefce8; padding: 25px; border-radius: 20px; border: 2px solid #d9f99d; position: relative; }
+    .theme-nature .tkb-title { color: #4d7c0f; font-size: 28px; font-weight: 900; text-align: center; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; }
+    .theme-nature .info-subtitle { display: none; }
+    .theme-nature .doodle { display: none; }
+    .theme-nature table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 15px; overflow: hidden; border: 2px solid #d9f99d; position: relative; z-index: 2;}
+    .theme-nature th, .theme-nature td { border: 1px solid #ecfccb; padding: 15px 10px; text-align: center; }
+    .theme-nature th { color: #fff; font-weight: 800; font-size: 17px; background: #84cc16; }
+    .theme-nature td { font-size: 16px; line-height: 1.5; color: #3f6212; font-weight: 800; background: #fff;}
+    .theme-nature .time-col { color: #4d7c0f; background: #f7fee7;} 
+    .theme-nature .break-row td { background-color: #d9f99d; font-weight: 900; color: #3f6212; letter-spacing: 3px; font-size: 15px;}
+    .theme-nature .break-small td { background-color: #ecfccb; color: #4d7c0f; letter-spacing: 2px; font-size: 14px;}
+    .theme-nature td span.sub-text { font-size: 14px; color: #65a30d; font-weight: 600; }
 
     .tools { display: none; justify-content: center; gap: 15px; margin-top: 30px; }
     .btn-excel { background-color: #10b981; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);}
@@ -130,9 +177,13 @@
       </div>
     </div>
 
+    <!-- CẬP NHẬT MENU GIAO DIỆN -->
     <div class="theme-toggle" id="themeToggle">
       <button id="btnSimple" class="t-btn active" onclick="switchTheme('simple')">📄 Bản Chuẩn</button>
       <button id="btnInfo" class="t-btn" onclick="switchTheme('infographic')">🎨 Bản Sketchnote</button>
+      <button id="btnBlue" class="t-btn" onclick="switchTheme('blue')">💼 Bản Chuyên Nghiệp</button>
+      <button id="btnPink" class="t-btn" onclick="switchTheme('pink')">🌸 Bản Kẹo Ngọt</button>
+      <button id="btnNature" class="t-btn" onclick="switchTheme('nature')">🌿 Bản Mộc</button>
     </div>
 
     <div id="captureContainer" style="display:none;">
@@ -155,7 +206,7 @@
     <div class="edit-hint" id="editHint">💡 Mẹo: Bấm trực tiếp vào các ô chữ trong bảng trên để chỉnh sửa/xóa thủ công trước khi tải ảnh!</div>
 
     <div class="tools" id="exportTools">
-      <button class="action-btn" id="btnSaveImg" onclick="downloadImage()">🖼️ Lưu Infographic</button>
+      <button class="action-btn" id="btnSaveImg" onclick="downloadImage()">🖼️ Lưu Hình Ảnh TKB</button>
       <button class="action-btn btn-excel" onclick="exportSimpleExcel()">📗 Tải Excel Siêu Gọn</button>
     </div>
   </div>
@@ -312,7 +363,6 @@
               for (let r = dataStartIndex; r < excelData.length; r++) {
                   let row = excelData[r] || [];
                   
-                  // CHỐNG QUÉT NHẦM BẢNG TỔNG KẾT CUỐI FILE
                   let rowTextCheck = row.slice(0, 5).join(" ").toUpperCase();
                   if (rowTextCheck.includes("TỔNG") || rowTextCheck.includes("GHI CHÚ") || rowTextCheck.includes("THỐNG KÊ")) {
                       break; 
@@ -332,7 +382,6 @@
 
                   let periodStr = ""; let timeStr = "";
                   
-                  // CHỈ QUÉT TÌM TIẾT Ở BÊN TRÁI CỘT MÔN (Ngăn chặn lấy nhầm số đếm ở bảng tổng kết)
                   let scanLimit = startCol > 0 ? startCol : 5; 
                   for (let c=0; c < scanLimit; c++) {
                       let val = row[c] ? row[c].toString().trim() : "";
@@ -368,7 +417,6 @@
 
                           let isGarbage = !hasLetterRegex.test(subject) && !hasLetterRegex.test(teacher);
                           
-                          // KHI MÔN HỌC HOẶC GIÁO VIÊN CHỈ LÀ SỐ TRƠ TRỌI (1, 2, 8...) -> ĐÓ LÀ RÁC CỦA BẢNG TỔNG KẾT
                           if (/^\d+$/.test(subject.toString().trim()) || /^\d+$/.test(teacher.toString().trim())) {
                               isGarbage = true;
                           }
@@ -513,20 +561,28 @@
       currentTheme = themeType;
       var captureArea = document.getElementById('captureArea');
       
-      document.getElementById('btnSimple').classList.remove('active');
-      document.getElementById('btnInfo').classList.remove('active');
+      // Xóa active tất cả các nút
+      document.querySelectorAll('.t-btn').forEach(btn => btn.classList.remove('active'));
+      
+      // Kích hoạt class giao diện tương ứng
+      captureArea.className = 'theme-' + themeType;
       
       if(themeType === 'simple') {
         document.getElementById('btnSimple').classList.add('active');
-        captureArea.className = 'theme-simple';
         document.getElementById('displayTitle').innerText = `TKB: ${currentQuery.toUpperCase()}`;
-        document.getElementById('btnSaveImg').innerText = "🖼️ Lưu Ảnh TKB";
-      } else {
+      } else if (themeType === 'infographic') {
         document.getElementById('btnInfo').classList.add('active');
-        captureArea.className = 'theme-infographic';
         document.getElementById('displayTitle').innerText = `THỜI KHÓA BIỂU`;
         document.getElementById('displaySubtitle').innerHTML = `Hệ Thống Giáo Dục Sky-Line • Lịch của: <strong>${currentQuery.toUpperCase()}</strong>`;
-        document.getElementById('btnSaveImg').innerText = "🎨 Lưu Infographic";
+      } else if (themeType === 'blue') {
+        document.getElementById('btnBlue').classList.add('active');
+        document.getElementById('displayTitle').innerText = `LỊCH GIẢNG DẠY: ${currentQuery.toUpperCase()}`;
+      } else if (themeType === 'pink') {
+        document.getElementById('btnPink').classList.add('active');
+        document.getElementById('displayTitle').innerText = `🎀 TKB CỦA ${currentQuery.toUpperCase()} 🎀`;
+      } else if (themeType === 'nature') {
+        document.getElementById('btnNature').classList.add('active');
+        document.getElementById('displayTitle').innerText = `TKB: ${currentQuery.toUpperCase()}`;
       }
     }
 
@@ -597,7 +653,17 @@
 
     function downloadImage() {
       var captureDiv = document.getElementById('captureArea');
-      var bgColor = currentTheme === 'infographic' ? '#fffde7' : '#ffffff'; 
+      
+      // Bản đồ màu nền xuất ảnh tương ứng với từng Theme
+      var bgColorMap = {
+          'simple': '#ffffff',
+          'infographic': '#fffde7',
+          'blue': '#f8fafc',
+          'pink': '#fdf2f8',
+          'nature': '#fefce8'
+      };
+      var bgColor = bgColorMap[currentTheme] || '#ffffff'; 
+      
       var icons = document.querySelectorAll('.floating-icon');
       icons.forEach(i => i.style.animation = 'none');
 
