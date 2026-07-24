@@ -175,6 +175,7 @@
       </div>
     </div>
 
+    <!-- MENU CHỌN GIAO DIỆN -->
     <div class="theme-toggle" id="themeToggle">
       <button id="btnSimple" class="t-btn active" onclick="switchTheme('simple')">📄 Bản Chuẩn</button>
       <button id="btnInfo" class="t-btn" onclick="switchTheme('infographic')">🎨 Bản Sketchnote</button>
@@ -221,7 +222,7 @@
         var utc_days  = Math.floor(serial - 25569);
         var utc_value = utc_days * 86400;                                        
         var date_info = new Date(utc_value * 1000);
-        return (date_info.getUTCMonth() + 1) + "/" + date_info.getUTCDate();
+        return date_info.getUTCDate() + "/" + (date_info.getUTCMonth() + 1); // Trả về chuẩn Ngày/Tháng (Lớp/Khối)
     }
 
     document.getElementById('excelUpload').addEventListener('change', async function(e) {
@@ -342,9 +343,8 @@
                       if (dMatch1) val = parseInt(dMatch1[2]) + "/" + parseInt(dMatch1[1]); 
                       else if (dMatch2) val = parseInt(dMatch2[1]) + "/" + parseInt(dMatch2[2]);
                       
-                      // Ép đổi tất cả dấu chấm, gạch ngang thành xuyệt (vd: 4.5 -> 4/5)
+                      // CHUYỂN TẤT CẢ DẤU CHẤM/GẠCH NGANG THÀNH XUYỆT (Bảo kê cho 4.5, 4-5)
                       val = val.replace(/[\.\-]/g, "/");
-                      // Xóa bỏ khoảng trắng xung quanh dấu xuyệt (vd: 4 / 5 -> 4/5)
                       val = val.replace(/\s*\/\s*/g, "/");
 
                       let isValidClass = /^([1-9]|1[0-2])(?!\d)/i.test(val);
@@ -428,13 +428,17 @@
                               let finalClassName = localClassesMap[c] || "[Lớp ẩn]";
                               let eventKey = finalClassName === "[Lớp ẩn]" ? `[Lớp ẩn]_${currentDay}_${absolutePeriod}_${c}` : `${finalClassName}_${currentDay}_${absolutePeriod}`;
                               
-                              allTimetableDict[eventKey] = {
-                                  day: currentDay,
-                                  period: absolutePeriod,
-                                  className: finalClassName,
-                                  subject: subject,
-                                  teacher: teacher
-                              };
+                              // BẢN VÁ: CHỈ ƯU TIÊN SHEET CÓ DỮ LIỆU ĐẦU TIÊN (FIRST SHEET WINS)
+                              // Giúp bảo toàn lịch gốc, không bị các sheet cũ nằm ở phía sau ghi đè bậy bạ
+                              if (!allTimetableDict[eventKey] || allTimetableDict[eventKey].className === "[Lớp ẩn]") {
+                                  allTimetableDict[eventKey] = {
+                                      day: currentDay,
+                                      period: absolutePeriod,
+                                      className: finalClassName,
+                                      subject: subject,
+                                      teacher: teacher
+                                  };
+                              }
                               
                               let cleanTeacherForSet = teacher.replace(/^(cô|thầy|gv|gvcn)\s*[:\-\.]?\s+/ig, "").trim();
                               let splitT = cleanTeacherForSet.split(/[\/\-,\+\(\)]/).map(t => t.trim()).filter(t => t !== "");
@@ -457,13 +461,15 @@
                              if ((subject || teacher) && !isGarbage) {
                                  let eventKey = `[Lớp ẩn]_${currentDay}_${absolutePeriod}_${c}`;
                                  
-                                 allTimetableDict[eventKey] = {
-                                      day: currentDay,
-                                      period: absolutePeriod,
-                                      className: "[Lớp ẩn]",
-                                      subject: subject,
-                                      teacher: teacher
-                                  };
+                                 if (!allTimetableDict[eventKey]) {
+                                     allTimetableDict[eventKey] = {
+                                          day: currentDay,
+                                          period: absolutePeriod,
+                                          className: "[Lớp ẩn]",
+                                          subject: subject,
+                                          teacher: teacher
+                                      };
+                                 }
                                   
                                   let cleanTeacherForSet = teacher.replace(/^(cô|thầy|gv|gvcn)\s*[:\-\.]?\s+/ig, "").trim();
                                   let splitT = cleanTeacherForSet.split(/[\/\-,\+\(\)]/).map(t => t.trim()).filter(t => t !== "");
@@ -526,7 +532,6 @@
             }
         } 
         else if (mode === 'class') {
-            // Chuyển đổi mọi định dạng 4.5, 4-5, 4/5 thành chuẩn 4/5 để so sánh
             let normalizedQuery = currentQuery.replace(/\s*[\.\-]\s*/g, "/").toUpperCase();
             let normalizedClass = event.className.replace(/\s*[\.\-]\s*/g, "/").toUpperCase();
             if (normalizedClass === normalizedQuery && event.subject !== "") {
