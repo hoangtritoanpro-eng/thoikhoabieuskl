@@ -5,16 +5,15 @@
   <!-- Thư viện xử lý Excel và chụp ảnh -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Font chữ -->
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Pangolin&display=swap" rel="stylesheet">
   
   <style>
-    /* HIỆU ỨNG ANIMATION */
     @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
     .floating-icon { display: inline-block; animation: float 3s ease-in-out infinite; }
     .floating-icon.delay-1 { animation-delay: 0.5s; }
     .floating-icon.delay-2 { animation-delay: 1s; }
 
-    /* GIAO DIỆN CHUNG TONE XANH MINT SKYLINE */
     body { 
       font-family: 'Nunito', sans-serif; margin: 0; padding: 30px 20px; background-color: #f0fdf4; 
       background-image: linear-gradient(to right, rgba(45, 212, 191, 0.2) 1px, transparent 1px), linear-gradient(to bottom, rgba(45, 212, 191, 0.2) 1px, transparent 1px);
@@ -107,7 +106,6 @@
     <div style="text-align: center;"><div class="badge">🌟 Không Gian Tiện Ích Giáo Viên Skyline 🌟</div></div>
     
     <div class="control-panel">
-      <!-- Cho phép tải nhiều file cùng lúc -->
       <label for="excelUpload" class="upload-btn">☁️ Tải lên các File TKB (Tiểu học, THCS, THPT)</label>
       <input type="file" id="excelUpload" accept=".xlsx, .xls" multiple />
       <div id="uploadStatus" style="margin-top: 18px; font-weight: 800; color: #0f766e; font-size: 16px;">👋 Xin chào! Hãy chọn cùng lúc nhiều file TKB để tải lên nhé.</div>
@@ -163,7 +161,7 @@
       const files = e.target.files;
       if (!files || files.length === 0) return;
       
-      document.getElementById('uploadStatus').innerHTML = "<span class='floating-icon'>⏳</span> Đang đọc và gộp dữ liệu...";
+      document.getElementById('uploadStatus').innerHTML = "<span class='floating-icon'>⏳</span> Đang đọc và gộp dữ liệu. Xin đợi chút...";
       
       allTimetableEvents = [];
       allTimeMaps = {};
@@ -235,33 +233,32 @@
 
               if (headerRowIndex === -1) return; 
 
-              // 2. LỌC TÊN LỚP TỪ DƯỚI LÊN ĐỂ CHỐNG LỖI (Sĩ số, KHỐI...)
+              // 2. LỌC TÊN LỚP SIÊU KHẮT KHE (Tránh bắt nhầm Ngày tháng, Sĩ số)
               let localClassesMap = {};
-              // Quét ngược từ dòng ngay trên Header lên trên để lấy Tên lớp chính xác nhất
               for (let r = headerRowIndex - 1; r >= Math.max(0, headerRowIndex - 3); r--) {
                   let row = excelData[r] || [];
                   for (let c = startCol; c < row.length; c += step) {
-                      if (localClassesMap[c]) continue; // Đã tìm thấy tên lớp ở cột này thì bỏ qua
+                      if (localClassesMap[c]) continue; 
                       
                       let val = row[c] ? row[c].toString().trim() : "";
                       
-                      // Bóc tách Lớp 1.1 từ chuỗi "Lớp 1.1\nGVCN: Trang"
+                      // Bóc tách Lớp từ chuỗi "Lớp 1.1\nGVCN: Trang"
                       if (val.toUpperCase().includes("LỚP")) {
-                          let lines = val.split('\n');
-                          let classLine = lines[0].toUpperCase().replace(/L[ỚO]P/g, "").trim();
-                          if(classLine) val = classLine;
+                          val = val.split('\n')[0].toUpperCase().replace(/L[ỚO]P/g, "").trim();
                       }
                       
-                      // Fix lỗi biến lớp 1/1 thành ngày tháng (01/01/2018) của Tiểu học
-                      if (isPrimary && val) {
-                          let dateMatch = val.match(/(?:^|\s)(\d{1,2})[\/\-](\d{1,2})/);
-                          if (dateMatch) {
-                              val = parseInt(dateMatch[1]) + "/" + parseInt(dateMatch[2]);
-                          }
-                      }
+                      // Fix lỗi biến lớp 1.1 thành ngày tháng (VD: 2018-01-02 00:00:00)
+                      let dMatch1 = val.match(/^20\d{2}[\/\-](\d{1,2})[\/\-](\d{1,2})/); // YYYY-MM-DD
+                      let dMatch2 = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-]20\d{2}/); // DD-MM-YYYY
                       
-                      // Lọc bỏ rác: KHỐI, Sĩ số, GVCN
-                      if (val && !val.includes("CN:") && !val.toUpperCase().includes("KHỐI") && val.toUpperCase() !== "ĐI CƠ SỞ 4 / TIỂU HỌC") {
+                      if (dMatch1) val = parseInt(dMatch1[1]) + "." + parseInt(dMatch1[2]);
+                      else if (dMatch2) val = parseInt(dMatch2[2]) + "." + parseInt(dMatch2[1]);
+                      
+                      // SIÊU LỌC: Phải đúng định dạng Tên Lớp chuẩn (1.1, 8/4, 10A1, 1INT)
+                      // Tuyệt đối chặn các chuỗi rác như "40", "Ngày 08/04", "Khối 1"
+                      let isValidClass = /^([1-9]|1[0-2])[\.\/A-Z][A-Z0-9\s]*$/i.test(val);
+                      
+                      if (isValidClass && !val.includes("CN:")) {
                           localClassesMap[c] = val.toUpperCase();
                           classesSet.add(val.toUpperCase());
                       }
@@ -274,6 +271,9 @@
               let currentBuoi = "sáng";
               let lastTeacher = {}; 
 
+              // Biểu thức lọc rác: Phải chứa ít nhất 1 chữ cái (Loại bỏ các ô chỉ có "0", "-", "2")
+              const hasLetterRegex = /[a-zA-ZÀ-ỹ\u00C0-\u1EF9]/;
+
               for (let r = dataStartIndex; r < excelData.length; r++) {
                   let row = excelData[r] || [];
                   
@@ -283,7 +283,7 @@
                       if (["Hai", "Ba", "Tư", "Năm", "Sáu"].includes(val)) { currentDay = val; break; }
                   }
 
-                  // Lấy Buổi (Dành cho Tiểu học)
+                  // Lấy Buổi
                   if (isPrimary) {
                       for(let c=0; c<=2; c++) {
                           let val = row[c] ? row[c].toString().trim().toLowerCase() : "";
@@ -291,13 +291,13 @@
                       }
                   }
 
-                  // Lấy Tiết và Khung giờ 
+                  // Lấy Tiết và Khung giờ (Khắc phục lỗi nhầm Phonics thành Giờ)
                   let periodStr = ""; let timeStr = "";
                   for (let c=0; c<=4; c++) {
                       let val = row[c] ? row[c].toString().trim() : "";
                       if (!periodStr && /^([1-9]|1[0-2])$/.test(val)) periodStr = val;
-                      // Sửa lỗi nhận diện sai thời gian bằng REGEX STRICT
-                      if (!timeStr && /\d{1,2}[:h]\d{2}/i.test(val)) timeStr = val;
+                      // Giờ học bắt buộc phải bắt đầu bằng chữ số (08:00, 08h00)
+                      if (!timeStr && /^\d{1,2}[:h]\d{2}/i.test(val)) timeStr = val; 
                   }
 
                   if (periodStr && currentDay) {
@@ -319,7 +319,10 @@
                               else if (!subject) lastTeacher[c] = "";
                           }
 
-                          if (subject || teacher) {
+                          // ANTI-GARBAGE: Nếu cả Môn và GV đều không có nổi 1 chữ cái nào -> Vứt đi!
+                          let isGarbage = !hasLetterRegex.test(subject) && !hasLetterRegex.test(teacher);
+
+                          if ((subject || teacher) && !isGarbage) {
                               allTimetableEvents.push({
                                   day: currentDay,
                                   period: absolutePeriod,
@@ -327,7 +330,7 @@
                                   subject: subject,
                                   teacher: teacher
                               });
-                              if (teacher) teachersSet.add(teacher);
+                              if (teacher && hasLetterRegex.test(teacher)) teachersSet.add(teacher);
                           }
                       }
                   } else {
@@ -349,21 +352,18 @@
       var days = ["Hai", "Ba", "Tư", "Năm", "Sáu"];
       var grid = {}; 
       
-      // KHỞI TẠO BẢNG ĐỘNG (Bảo vệ chống tràn Tiết gây crash web)
       var periodsSet = new Set(["1", "2", "3", "4", "5", "6", "7", "8"]);
       allTimetableEvents.forEach(e => periodsSet.add(e.period));
       periodsSet.forEach(p => grid[p] = {"Hai": "", "Ba": "", "Tư": "", "Năm": "", "Sáu": ""});
       
       var found = false;
 
-      // TRA CỨU DỮ LIỆU
       allTimetableEvents.forEach(event => {
         let isMatch = false;
         
         if (mode === 'teacher') {
             let queryLower = currentQuery.toLowerCase();
             let teacherLower = event.teacher.toLowerCase();
-            // Khớp chính xác hoàn toàn HOẶC khớp 1 giáo viên trong cặp dạy chung (VD: Rene/Linh)
             let teachersInCell = teacherLower.split(/[\/\-,\+]/).map(t => t.trim());
             if (teacherLower === queryLower || teachersInCell.includes(queryLower)) {
                 isMatch = true;
@@ -380,14 +380,18 @@
             if (mode === 'teacher') val = `<strong>${event.className}</strong><br><span class="sub-text">(${event.subject})</span>`;
             else val = `<strong>${event.subject}</strong><br><span class="sub-text">(${event.teacher})</span>`;
             
-            grid[event.period][event.day] = grid[event.period][event.day] ? grid[event.period][event.day] + "<hr style='margin:6px 0; border:0; border-top:1px dashed #cbd5e1;'>" + val : val;
+            // Xóa bỏ các dòng <hr> bị nhân đôi nếu có
+            if (grid[event.period][event.day] && !grid[event.period][event.day].includes(val)) {
+                grid[event.period][event.day] += "<hr style='margin:6px 0; border:0; border-top:1px dashed #cbd5e1;'>" + val;
+            } else if (!grid[event.period][event.day]) {
+                grid[event.period][event.day] = val;
+            }
             found = true;
         }
       });
 
       if (!found) { alert("Không tìm thấy dữ liệu cho khóa tìm kiếm này."); return; }
       
-      // Sắp xếp lại thứ tự tiết
       var periods = Array.from(periodsSet).sort((a, b) => parseInt(a) - parseInt(b));
       currentResultGrid = { grid, timeMap: allTimeMaps, periods, days };
       renderTable();
