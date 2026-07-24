@@ -48,6 +48,11 @@
     .t-btn { padding: 10px 25px; border: none; background: transparent; color: #64748b; border-radius: 12px; cursor: pointer; font-weight: 800; font-family: 'Nunito'; font-size: 16px; transition: 0.3s;}
     .t-btn.active { background: #14b8a6; color: white; box-shadow: 0 4px 10px rgba(20, 184, 166, 0.3); }
 
+    /* HIỆU ỨNG TƯƠNG TÁC KHI SỬA THỦ CÔNG */
+    .editable-cell { transition: all 0.2s ease; outline: none; border-radius: 8px;}
+    .editable-cell:hover { background-color: rgba(255, 255, 255, 0.8) !important; cursor: text; box-shadow: inset 0 0 8px rgba(20, 184, 166, 0.3);}
+    .editable-cell:focus { background-color: #ffffff !important; box-shadow: inset 0 0 0 2px #0ea5e9;}
+
     /* GIAO DIỆN BẢN ĐƠN GIẢN */
     .theme-simple { background: white; padding: 25px; border-radius: 20px; border: 2px solid #ccfbf1; position: relative; }
     .theme-simple .tkb-title { color: #0f766e; font-size: 28px; font-weight: 900; text-align: center; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; }
@@ -62,7 +67,7 @@
     .theme-simple .break-small td { background-color: #fef9c3; color: #a16207; letter-spacing: 2px; font-size: 13px;}
     .theme-simple td span.sub-text { font-size: 14px; color: #475569; font-weight: 600; }
 
-    /* GIAO DIỆN BẢN INFOGRAPHIC */
+    /* GIAO DIỆN BẢN INFOGRAPHIC NỀN VÀNG */
     .theme-infographic {
       background-color: #fffde7; background-image: linear-gradient(#fde68a 2px, transparent 2px), linear-gradient(90deg, #fde68a 2px, transparent 2px); background-size: 30px 30px; padding: 65px 50px; border: 4px solid #0f766e; border-radius: 20px; font-family: 'Pangolin', cursive; position: relative; overflow: hidden;
     }
@@ -97,6 +102,8 @@
     .tools { display: none; justify-content: center; gap: 15px; margin-top: 30px; }
     .btn-excel { background-color: #10b981; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);}
     .btn-excel:hover { background-color: #059669; }
+    
+    .edit-hint { text-align: center; color: #0ea5e9; font-weight: 800; font-size: 16px; margin-top: 15px; display: none; animation: float 3s ease-in-out infinite; }
   </style>
 </head>
 <body>
@@ -145,6 +152,8 @@
       </div>
     </div>
     
+    <div class="edit-hint" id="editHint">💡 Mẹo: Bấm trực tiếp vào các ô chữ trong bảng trên để chỉnh sửa/xóa thủ công trước khi tải ảnh!</div>
+
     <div class="tools" id="exportTools">
       <button class="action-btn" id="btnSaveImg" onclick="downloadImage()">🖼️ Lưu Infographic</button>
       <button class="action-btn btn-excel" onclick="exportSimpleExcel()">📗 Tải Excel Siêu Gọn</button>
@@ -152,7 +161,6 @@
   </div>
 
   <script>
-    // SỬ DỤNG DICTIONARY ĐỂ GHI ĐÈ THÔNG MINH
     let allTimetableDict = {}; 
     let allTimeMaps = {}; 
     let currentQuery = "";
@@ -174,7 +182,6 @@
       
       document.getElementById('uploadStatus').innerHTML = "<span class='floating-icon'>⏳</span> Đang phân tích đa tầng. Xin đợi chút...";
       
-      // Xóa trắng Dict cũ mỗi khi tải file mới
       allTimetableDict = {};
       allTimeMaps = {};
       isOnlyPrimary = true; 
@@ -354,8 +361,6 @@
 
                           if ((subject || teacher) && !isGarbage) {
                               let finalClassName = localClassesMap[c] || "[Lớp ẩn]";
-                              
-                              // KHÓA ĐỊNH DANH ĐỂ GHI ĐÈ BẢN CŨ
                               let eventKey = finalClassName === "[Lớp ẩn]" ? `[Lớp ẩn]_${currentDay}_${absolutePeriod}_${c}` : `${finalClassName}_${currentDay}_${absolutePeriod}`;
                               
                               allTimetableDict[eventKey] = {
@@ -374,7 +379,6 @@
                           }
                       }
                       
-                      // Bắt các cột Lớp Ẩn
                       for (let c = startCol; c < row.length; c += step) {
                           if (!localClassesMap[c]) {
                              let subject = row[c] ? row[c].toString().trim() : "";
@@ -417,9 +421,7 @@
       currentQuery = mode === 'teacher' ? document.getElementById('teacherInput').value.trim() : document.getElementById('classInput').value.trim().toUpperCase();
       if (!currentQuery) { alert("Vui lòng nhập từ khóa!"); return; }
 
-      // CHUYỂN TỪ DICT SANG ARRAY SAU KHI ĐÃ GHI ĐÈ XONG XUÔI
       var allTimetableEvents = Object.values(allTimetableDict);
-
       var days = ["Hai", "Ba", "Tư", "Năm", "Sáu"];
       var grid = {}; 
       
@@ -478,8 +480,16 @@
 
       if (!found) { alert("Không tìm thấy dữ liệu cho khóa tìm kiếm này."); return; }
       
+      // BỘ LỌC TIẾT THÔNG MINH (Chống tràn Tiết 12 rỗng)
       var periods = Array.from(periodsSet).sort((a, b) => parseInt(a) - parseInt(b));
-      currentResultGrid = { grid, timeMap: allTimeMaps, periods, days };
+      var filteredPeriods = periods.filter(p => {
+          let pNum = parseInt(p);
+          if (pNum <= 8) return true; // Luôn giữ chuẩn khung 1-8
+          // Các tiết lớn hơn 8 (9, 10, 11, 12...) chỉ được hiển thị nếu NÓ THỰC SỰ CÓ DỮ LIỆU
+          return days.some(d => grid[p] && grid[p][d] !== "");
+      });
+
+      currentResultGrid = { grid, timeMap: allTimeMaps, periods: filteredPeriods, days };
       renderTable();
     }
 
@@ -512,15 +522,21 @@
       periods.forEach(p => {
         var timeStr = timeMap[p] ? `<br><span class="sub-text">(${timeMap[p]})</span>` : '';
         html += `<tr><td class="time-col">Tiết ${p}${timeStr}</td>`;
-        days.forEach(d => { html += `<td>${grid[p][d]}</td>`; });
+        
+        // THÊM CHỨC NĂNG CONTENTEDITABLE (Cho phép sửa/xóa tay trực tiếp trên ô)
+        days.forEach(d => { 
+            let cellData = grid[p][d];
+            html += `<td contenteditable="true" spellcheck="false" class="editable-cell" title="Click để sửa chữ">${cellData}</td>`; 
+        });
+        
         html += '</tr>';
         
         if (isOnlyPrimary) {
-            if (p === "2") html += '<tr class="break-row break-small"><td colspan="6">🍵 NGHỈ GIẢI LAO (09:30 - 09:45) 🍵</td></tr>';
-            if (p === "4") html += '<tr class="break-row"><td colspan="6">🍲 NGHỈ TRƯA 🍲</td></tr>';
-            if (p === "6") html += '<tr class="break-row break-small"><td colspan="6">🥪 NGHỈ GIẢI LAO - ĂN XẾ (14:45 - 15:05) 🥪</td></tr>';
+            if (p === "2") html += '<tr class="break-row break-small"><td colspan="6" contenteditable="true">🍵 NGHỈ GIẢI LAO (09:30 - 09:45) 🍵</td></tr>';
+            if (p === "4") html += '<tr class="break-row"><td colspan="6" contenteditable="true">🍲 NGHỈ TRƯA 🍲</td></tr>';
+            if (p === "6") html += '<tr class="break-row break-small"><td colspan="6" contenteditable="true">🥪 NGHỈ GIẢI LAO - ĂN XẾ (14:45 - 15:05) 🥪</td></tr>';
         } else {
-            if (p === "4") html += '<tr class="break-row"><td colspan="6">⭐ NGHỈ TRƯA ⭐</td></tr>';
+            if (p === "4") html += '<tr class="break-row"><td colspan="6" contenteditable="true">⭐ NGHỈ TRƯA ⭐</td></tr>';
         }
       });
       
@@ -529,6 +545,7 @@
       document.getElementById('themeToggle').style.display = 'flex';
       document.getElementById('captureContainer').style.display = 'block';
       document.getElementById('exportTools').style.display = 'flex';
+      document.getElementById('editHint').style.display = 'block'; // Bật hiển thị mẹo hướng dẫn
     }
 
     function exportSimpleExcel() {
