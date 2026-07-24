@@ -61,7 +61,7 @@
     .theme-simple .break-row td { background-color: #f1f5f9; font-weight: 900; color: #64748b; letter-spacing: 3px; font-size: 14px;}
     .theme-simple td span.sub-text { font-size: 14px; color: #475569; font-weight: 600; }
 
-    /* GIAO DIỆN BẢN INFOGRAPHIC NỀN VÀNG */
+    /* GIAO DIỆN BẢN INFOGRAPHIC */
     .theme-infographic {
       background-color: #fffde7; background-image: linear-gradient(#fde68a 2px, transparent 2px), linear-gradient(90deg, #fde68a 2px, transparent 2px); background-size: 30px 30px; padding: 65px 50px; border: 4px solid #0f766e; border-radius: 20px; font-family: 'Pangolin', cursive; position: relative; overflow: hidden;
     }
@@ -110,7 +110,7 @@
       <div id="uploadStatus" style="margin-top: 18px; font-weight: 800; color: #0f766e; font-size: 16px;">👋 Xin chào! Hãy chọn cùng lúc nhiều file TKB để tải lên nhé.</div>
 
       <div class="search-box" id="searchBox">
-        <input type="text" id="teacherInput" placeholder="Tên Giáo viên..." list="teacherList">
+        <input type="text" id="teacherInput" placeholder="Tên Giáo viên / Trợ giảng..." list="teacherList">
         <datalist id="teacherList"></datalist>
         <button class="action-btn" onclick="processSearch('teacher')">👨‍🏫 Tra GV</button>
         
@@ -196,9 +196,10 @@
               const excelData = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: "", raw: false});
               
               let headerRowIndex = -1; let startCol = -1; let step = 3; let isPrimary = false;
-              let gvOffset = 1; // Khoảng cách cột từ MÔN đến GIÁO VIÊN
+              let gvOffset = 1; 
+              let tgOffset = -1; // Radar quét Trợ Giảng
 
-              // 1. TÌM HEADER & TỰ ĐỘNG DÒ CỘT GIÁO VIÊN BỊ LỆCH (Tránh nhầm cột Phòng học)
+              // 1. TÌM HEADER & TỰ ĐỘNG DÒ CỘT GIÁO VIÊN/TRỢ GIẢNG
               for (let r = 0; r < Math.min(20, excelData.length); r++) {
                   let row = excelData[r] || [];
                   let monIndex = -1;
@@ -210,23 +211,30 @@
                   }
                   
                   if (monIndex !== -1) {
-                      // Dò tìm xem cột Giáo Viên nằm ở +1, +2 hay +3
                       for (let j = 1; j <= 3; j++) {
                           let nextCell = row[monIndex+j] ? row[monIndex+j].toString().trim().toUpperCase() : "";
                           if (nextCell === "GVGD" || nextCell === "GV" || nextCell === "GIÁO VIÊN" || nextCell.includes("GV")) {
                               headerRowIndex = r;
                               startCol = monIndex;
-                              gvOffset = j; // Lấy đúng khoảng cách
+                              gvOffset = j; 
                               break;
                           }
                       }
                       
                       if (headerRowIndex !== -1) {
-                          // Dò bước nhảy (step) đến lớp tiếp theo
+                          // Xác định Step (Khoảng cách giữa các Lớp)
                           for (let i = monIndex + 1; i < row.length; i++) {
                               let tempVal = row[i] ? row[i].toString().trim().toUpperCase() : "";
                               if (tempVal === "MÔN" || tempVal === "MÔN HỌC") {
                                   step = i - monIndex;
+                                  break;
+                              }
+                          }
+                          // Quét tìm cột Trợ Giảng (TG) nằm trong khoảng Step
+                          for (let k = 1; k < step; k++) {
+                              let cellK = row[monIndex+k] ? row[monIndex+k].toString().trim().toUpperCase() : "";
+                              if (cellK === "TG" || cellK === "GVTG" || cellK === "TRỢ GIẢNG" || cellK === "TA") {
+                                  tgOffset = k;
                                   break;
                               }
                           }
@@ -238,7 +246,7 @@
 
               if (headerRowIndex === -1) return; 
 
-              // 2. LỌC TÊN LỚP (Mở rộng quét ngược 4 dòng)
+              // 2. LỌC TÊN LỚP
               let localClassesMap = {};
               for (let r = headerRowIndex - 1; r >= Math.max(0, headerRowIndex - 4); r--) {
                   let row = excelData[r] || [];
@@ -256,7 +264,6 @@
                       if (dMatch1) val = parseInt(dMatch1[1]) + "." + parseInt(dMatch1[2]);
                       else if (dMatch2) val = parseInt(dMatch2[2]) + "." + parseInt(dMatch2[1]);
                       
-                      // BỘ LỌC THÉP: Tên lớp phải bắt đầu từ số 1-12, và KHÔNG được theo sau bởi một số khác
                       let isValidClass = /^([1-9]|1[0-2])(?!\d)/i.test(val);
                       
                       if (isValidClass && !val.includes("CN:")) {
@@ -272,7 +279,6 @@
               let currentBuoi = "sáng";
               let lastTeacher = {}; 
 
-              // Phải có chữ cái để chống rác như "0", "(1)"
               const hasLetterRegex = /[a-zA-ZÀ-ỹ\u00C0-\u1EF9]/;
 
               for (let r = dataStartIndex; r < excelData.length; r++) {
@@ -308,8 +314,16 @@
                       for (let colIndex in localClassesMap) {
                           let c = parseInt(colIndex);
                           let subject = row[c] ? row[c].toString().trim() : "";
-                          // Lấy giáo viên chính xác bằng gvOffset
                           let teacher = row[c + gvOffset] ? row[c + gvOffset].toString().trim() : "";
+                          
+                          // LẤY DỮ LIỆU TRỢ GIẢNG
+                          if (tgOffset !== -1) {
+                              let assistant = row[c + tgOffset] ? row[c + tgOffset].toString().trim() : "";
+                              // Chống rác như "Lab 3", "Phòng 1"
+                              if (assistant && !/^[\d\.\-]+$/.test(assistant) && !assistant.toLowerCase().includes("lab") && !assistant.toLowerCase().includes("phòng")) {
+                                  teacher = teacher ? (teacher + " - " + assistant) : assistant;
+                              }
+                          }
                           
                           if (isPrimary) {
                               if (subject && !teacher) teacher = lastTeacher[c] || "";
@@ -327,11 +341,15 @@
                                   subject: subject,
                                   teacher: teacher
                               });
-                              // Dọn tên rác trước khi đưa vào Set gợi ý
+                              
+                              // TÁCH TÊN GIÁO VIÊN / TRỢ GIẢNG ĐỂ ĐƯA VÀO GỢI Ý
                               let cleanTeacherForSet = teacher.replace(/^(cô|thầy|gv|gvcn)\s*[:\-\.]?\s+/ig, "").trim();
-                              if (cleanTeacherForSet && hasLetterRegex.test(cleanTeacherForSet)) {
-                                  teachersSet.add(cleanTeacherForSet);
-                              }
+                              let splitT = cleanTeacherForSet.split(/[\/\-,\+\(\)]/).map(t => t.trim()).filter(t => t !== "");
+                              splitT.forEach(t => {
+                                  if (hasLetterRegex.test(t)) {
+                                      teachersSet.add(t);
+                                  }
+                              });
                           }
                       }
                   } else {
@@ -366,9 +384,8 @@
             let queryLower = currentQuery.toLowerCase();
             let teacherLower = event.teacher.toLowerCase();
             
-            // Xóa tiền tố chức danh (Cô Thảo -> Thảo)
             let cleanTeacher = teacherLower.replace(/^(cô|thầy|gv|gvcn)\s*[:\-\.]?\s+/g, "").trim();
-            // Cắt riêng các giáo viên chung ngoặc hoặc /
+            // Cắt riêng các giáo viên / trợ giảng
             let teachersInCell = cleanTeacher.split(/[\/\-,\+\(\)]/).map(t => t.trim()).filter(t => t !== "");
             
             if (cleanTeacher === queryLower || teachersInCell.includes(queryLower)) {
