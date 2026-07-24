@@ -155,13 +155,14 @@
     let currentTheme = 'simple';
     let currentResultGrid = null;
     
-    // Hàm chuyển đổi Excel Serial Date (VD: 42000) thành chuỗi dd/mm
+    // HÀM CHUYỂN ĐỔI NGÀY THÁNG ĐÃ ĐƯỢC VÁ LỖI (Trích xuất: Tháng/Ngày -> Lớp/Khối)
     function ExcelDateToJSDate(serial) {
         if (!serial || isNaN(serial)) return null;
         var utc_days  = Math.floor(serial - 25569);
         var utc_value = utc_days * 86400;                                        
         var date_info = new Date(utc_value * 1000);
-        return date_info.getDate() + "/" + (date_info.getMonth() + 1);
+        // Lấy đúng Tháng (Grade) / Ngày (Class) trong múi giờ chuẩn UTC
+        return (date_info.getUTCMonth() + 1) + "/" + date_info.getUTCDate();
     }
 
     document.getElementById('excelUpload').addEventListener('change', async function(e) {
@@ -198,16 +199,15 @@
         reader.onload = function(e) {
           try {
             const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, {type: 'array', cellDates: false}); // Tắt tự dịch Date để lấy chuỗi gốc
+            const workbook = XLSX.read(data, {type: 'array', cellDates: false}); 
             
             workbook.SheetNames.forEach(sheetName => {
               const sheet = workbook.Sheets[sheetName];
-              const excelData = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: "", raw: true}); // raw: true để lấy số seri ngày
+              const excelData = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: "", raw: true}); 
               
               let headerRowIndex = -1; let startCol = -1; let step = 3; let isPrimary = false;
               let gvOffset = 1; let tgOffset = -1; 
 
-              // 1. TÌM HEADER & DÒ CỘT GIÁO VIÊN
               for (let r = 0; r < Math.min(20, excelData.length); r++) {
                   let row = excelData[r] || [];
                   let monIndex = -1;
@@ -252,7 +252,6 @@
 
               if (headerRowIndex === -1) return; 
 
-              // 2. LỌC TÊN LỚP MỞ RỘNG (Quét TẬN 8 DÒNG phía trên)
               let localClassesMap = {};
               for (let r = headerRowIndex - 1; r >= Math.max(0, headerRowIndex - 8); r--) {
                   let row = excelData[r] || [];
@@ -262,7 +261,7 @@
                       let rawVal = row[c];
                       let val = rawVal ? rawVal.toString().trim() : "";
                       
-                      // Nếu là số Serial của Excel (Ngày tháng bị biến dạng)
+                      // 1. Phục hồi Tên lớp bị Excel định dạng thành Số Seri
                       if (typeof rawVal === 'number' && rawVal > 40000 && rawVal < 50000) {
                           val = ExcelDateToJSDate(rawVal);
                       }
@@ -271,16 +270,16 @@
                           val = val.split('\n')[0].toUpperCase().replace(/L[ỚO]P/g, "").trim();
                       }
                       
-                      // Bắt các chuỗi định dạng ngày bị sai
+                      // 2. Phục hồi Tên lớp bị định dạng thành chuỗi YYYY-MM-DD
                       let dMatch1 = val.match(/^20\d{2}[\/\-](\d{1,2})[\/\-](\d{1,2})/); 
                       let dMatch2 = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-]20\d{2}/); 
-                      if (dMatch1) val = parseInt(dMatch1[2]) + "/" + parseInt(dMatch1[1]); // Tháng/Ngày -> Lớp/Khối
-                      else if (dMatch2) val = parseInt(dMatch2[1]) + "/" + parseInt(dMatch2[2]);
                       
-                      // Chuyển dấu chấm thành dấu xuyệt (1.1 -> 1/1)
+                      // Sửa lỗi: Luôn xuất ra THÁNG/NGÀY (Khối/Lớp)
+                      if (dMatch1) val = parseInt(dMatch1[1]) + "/" + parseInt(dMatch1[2]); 
+                      else if (dMatch2) val = parseInt(dMatch2[2]) + "/" + parseInt(dMatch2[1]);
+                      
                       val = val.replace(/\./g, "/");
 
-                      // Chấp nhận Tên Lớp bắt đầu từ số 1-12
                       let isValidClass = /^([1-9]|1[0-2])(?!\d)/i.test(val);
                       
                       if (isValidClass && !val.includes("CN:")) {
@@ -290,7 +289,6 @@
                   }
               }
 
-              // 3. QUÉT DỮ LIỆU TKB 
               let dataStartIndex = headerRowIndex + 1;
               let currentDay = "";
               let currentBuoi = "sáng";
@@ -328,7 +326,6 @@
                       
                       if (timeStr && !allTimeMaps[absolutePeriod]) allTimeMaps[absolutePeriod] = timeStr;
 
-                      // Quét từng lớp
                       for (let colIndex in localClassesMap) {
                           let c = parseInt(colIndex);
                           let subject = row[c] ? row[c].toString().trim() : "";
@@ -350,7 +347,6 @@
                           let isGarbage = !hasLetterRegex.test(subject) && !hasLetterRegex.test(teacher);
 
                           if ((subject || teacher) && !isGarbage) {
-                              // Gán tên "[Lớp ẩn]" nếu cột đó có Môn/GV mà thuật toán không bắt được Tên Lớp ở phía trên
                               let finalClassName = localClassesMap[c] || "[Lớp ẩn]";
                               
                               allTimetableEvents.push({
@@ -364,14 +360,11 @@
                               let cleanTeacherForSet = teacher.replace(/^(cô|thầy|gv|gvcn)\s*[:\-\.]?\s+/ig, "").trim();
                               let splitT = cleanTeacherForSet.split(/[\/\-,\+\(\)]/).map(t => t.trim()).filter(t => t !== "");
                               splitT.forEach(t => {
-                                  if (hasLetterRegex.test(t)) {
-                                      teachersSet.add(t);
-                                  }
+                                  if (hasLetterRegex.test(t)) teachersSet.add(t);
                               });
                           }
                       }
                       
-                      // BẮT CÁC CỘT BỊ SÓT (Fallback): Nếu cột có data mà không có trong localClassesMap
                       for (let c = startCol; c < row.length; c += step) {
                           if (!localClassesMap[c]) {
                              let subject = row[c] ? row[c].toString().trim() : "";
@@ -436,7 +429,6 @@
             }
         } 
         else if (mode === 'class') {
-            // Chấp nhận tìm kiếm nếu user gõ 1/1, 1.1, hoặc 1-1
             let normalizedQuery = currentQuery.replace(/[\.\-]/g, "/");
             let normalizedClass = event.className.replace(/[\.\-]/g, "/");
             
