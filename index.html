@@ -312,6 +312,12 @@
               for (let r = dataStartIndex; r < excelData.length; r++) {
                   let row = excelData[r] || [];
                   
+                  // CHỐNG QUÉT NHẦM BẢNG TỔNG KẾT CUỐI FILE
+                  let rowTextCheck = row.slice(0, 5).join(" ").toUpperCase();
+                  if (rowTextCheck.includes("TỔNG") || rowTextCheck.includes("GHI CHÚ") || rowTextCheck.includes("THỐNG KÊ")) {
+                      break; 
+                  }
+
                   for(let c=0; c<=2; c++) {
                       let val = row[c] ? row[c].toString().trim() : "";
                       if (["Hai", "Ba", "Tư", "Năm", "Sáu"].includes(val)) { currentDay = val; break; }
@@ -325,7 +331,10 @@
                   }
 
                   let periodStr = ""; let timeStr = "";
-                  for (let c=0; c<=4; c++) {
+                  
+                  // CHỈ QUÉT TÌM TIẾT Ở BÊN TRÁI CỘT MÔN (Ngăn chặn lấy nhầm số đếm ở bảng tổng kết)
+                  let scanLimit = startCol > 0 ? startCol : 5; 
+                  for (let c=0; c < scanLimit; c++) {
                       let val = row[c] ? row[c].toString().trim() : "";
                       if (!periodStr && /^([1-9]|1[0-2])$/.test(val)) periodStr = val;
                       if (!timeStr && /^\d{1,2}[:h]\d{2}/i.test(val)) timeStr = val; 
@@ -358,6 +367,11 @@
                           }
 
                           let isGarbage = !hasLetterRegex.test(subject) && !hasLetterRegex.test(teacher);
+                          
+                          // KHI MÔN HỌC HOẶC GIÁO VIÊN CHỈ LÀ SỐ TRƠ TRỌI (1, 2, 8...) -> ĐÓ LÀ RÁC CỦA BẢNG TỔNG KẾT
+                          if (/^\d+$/.test(subject.toString().trim()) || /^\d+$/.test(teacher.toString().trim())) {
+                              isGarbage = true;
+                          }
 
                           if ((subject || teacher) && !isGarbage) {
                               let finalClassName = localClassesMap[c] || "[Lớp ẩn]";
@@ -385,6 +399,10 @@
                              let teacher = row[c + gvOffset] ? row[c + gvOffset].toString().trim() : "";
                              
                              let isGarbage = !hasLetterRegex.test(subject) && !hasLetterRegex.test(teacher);
+                             if (/^\d+$/.test(subject.toString().trim()) || /^\d+$/.test(teacher.toString().trim())) {
+                                 isGarbage = true;
+                             }
+                             
                              if ((subject || teacher) && !isGarbage) {
                                  let eventKey = `[Lớp ẩn]_${currentDay}_${absolutePeriod}_${c}`;
                                  
@@ -480,12 +498,10 @@
 
       if (!found) { alert("Không tìm thấy dữ liệu cho khóa tìm kiếm này."); return; }
       
-      // BỘ LỌC TIẾT THÔNG MINH (Chống tràn Tiết 12 rỗng)
       var periods = Array.from(periodsSet).sort((a, b) => parseInt(a) - parseInt(b));
       var filteredPeriods = periods.filter(p => {
           let pNum = parseInt(p);
-          if (pNum <= 8) return true; // Luôn giữ chuẩn khung 1-8
-          // Các tiết lớn hơn 8 (9, 10, 11, 12...) chỉ được hiển thị nếu NÓ THỰC SỰ CÓ DỮ LIỆU
+          if (pNum <= 8) return true; 
           return days.some(d => grid[p] && grid[p][d] !== "");
       });
 
@@ -523,7 +539,6 @@
         var timeStr = timeMap[p] ? `<br><span class="sub-text">(${timeMap[p]})</span>` : '';
         html += `<tr><td class="time-col">Tiết ${p}${timeStr}</td>`;
         
-        // THÊM CHỨC NĂNG CONTENTEDITABLE (Cho phép sửa/xóa tay trực tiếp trên ô)
         days.forEach(d => { 
             let cellData = grid[p][d];
             html += `<td contenteditable="true" spellcheck="false" class="editable-cell" title="Click để sửa chữ">${cellData}</td>`; 
@@ -545,7 +560,7 @@
       document.getElementById('themeToggle').style.display = 'flex';
       document.getElementById('captureContainer').style.display = 'block';
       document.getElementById('exportTools').style.display = 'flex';
-      document.getElementById('editHint').style.display = 'block'; // Bật hiển thị mẹo hướng dẫn
+      document.getElementById('editHint').style.display = 'block'; 
     }
 
     function exportSimpleExcel() {
