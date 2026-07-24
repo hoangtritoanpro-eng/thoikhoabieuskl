@@ -62,7 +62,7 @@
     .theme-simple .break-small td { background-color: #fef9c3; color: #a16207; letter-spacing: 2px; font-size: 13px;}
     .theme-simple td span.sub-text { font-size: 14px; color: #475569; font-weight: 600; }
 
-    /* GIAO DIỆN BẢN INFOGRAPHIC NỀN VÀNG */
+    /* GIAO DIỆN BẢN INFOGRAPHIC */
     .theme-infographic {
       background-color: #fffde7; background-image: linear-gradient(#fde68a 2px, transparent 2px), linear-gradient(90deg, #fde68a 2px, transparent 2px); background-size: 30px 30px; padding: 65px 50px; border: 4px solid #0f766e; border-radius: 20px; font-family: 'Pangolin', cursive; position: relative; overflow: hidden;
     }
@@ -152,12 +152,13 @@
   </div>
 
   <script>
-    let allTimetableEvents = []; 
+    // SỬ DỤNG DICTIONARY ĐỂ GHI ĐÈ THÔNG MINH
+    let allTimetableDict = {}; 
     let allTimeMaps = {}; 
     let currentQuery = "";
     let currentTheme = 'simple';
     let currentResultGrid = null;
-    let isOnlyPrimary = true; // Biến cờ kiểm tra cấp học
+    let isOnlyPrimary = true; 
     
     function ExcelDateToJSDate(serial) {
         if (!serial || isNaN(serial)) return null;
@@ -173,9 +174,10 @@
       
       document.getElementById('uploadStatus').innerHTML = "<span class='floating-icon'>⏳</span> Đang phân tích đa tầng. Xin đợi chút...";
       
-      allTimetableEvents = [];
+      // Xóa trắng Dict cũ mỗi khi tải file mới
+      allTimetableDict = {};
       allTimeMaps = {};
-      isOnlyPrimary = true; // Mặc định là true, nếu phát hiện có THCS/THPT sẽ đổi thành false
+      isOnlyPrimary = true; 
       let globalTeachersSet = new Set();
       let globalClassesSet = new Set();
 
@@ -211,7 +213,6 @@
               let headerRowIndex = -1; let startCol = -1; let step = 3; let isPrimarySheet = false;
               let gvOffset = 1; let tgOffset = -1; 
 
-              // QUÉT TÌM TỪ KHÓA TRUNG HỌC ĐỂ TẮT CHẾ ĐỘ "CHỈ TIỂU HỌC"
               let topRowsText = excelData.slice(0, 10).flat().join(" ").toUpperCase();
               if (topRowsText.includes("TRUNG HỌC") || topRowsText.includes("THCS") || topRowsText.includes("THPT")) {
                   isOnlyPrimary = false;
@@ -354,19 +355,49 @@
                           if ((subject || teacher) && !isGarbage) {
                               let finalClassName = localClassesMap[c] || "[Lớp ẩn]";
                               
-                              allTimetableEvents.push({
+                              // KHÓA ĐỊNH DANH ĐỂ GHI ĐÈ BẢN CŨ
+                              let eventKey = finalClassName === "[Lớp ẩn]" ? `[Lớp ẩn]_${currentDay}_${absolutePeriod}_${c}` : `${finalClassName}_${currentDay}_${absolutePeriod}`;
+                              
+                              allTimetableDict[eventKey] = {
                                   day: currentDay,
                                   period: absolutePeriod,
                                   className: finalClassName,
                                   subject: subject,
                                   teacher: teacher
-                              });
+                              };
                               
                               let cleanTeacherForSet = teacher.replace(/^(cô|thầy|gv|gvcn)\s*[:\-\.]?\s+/ig, "").trim();
                               let splitT = cleanTeacherForSet.split(/[\/\-,\+\(\)]/).map(t => t.trim()).filter(t => t !== "");
                               splitT.forEach(t => {
                                   if (hasLetterRegex.test(t)) teachersSet.add(t);
                               });
+                          }
+                      }
+                      
+                      // Bắt các cột Lớp Ẩn
+                      for (let c = startCol; c < row.length; c += step) {
+                          if (!localClassesMap[c]) {
+                             let subject = row[c] ? row[c].toString().trim() : "";
+                             let teacher = row[c + gvOffset] ? row[c + gvOffset].toString().trim() : "";
+                             
+                             let isGarbage = !hasLetterRegex.test(subject) && !hasLetterRegex.test(teacher);
+                             if ((subject || teacher) && !isGarbage) {
+                                 let eventKey = `[Lớp ẩn]_${currentDay}_${absolutePeriod}_${c}`;
+                                 
+                                 allTimetableDict[eventKey] = {
+                                      day: currentDay,
+                                      period: absolutePeriod,
+                                      className: "[Lớp ẩn]",
+                                      subject: subject,
+                                      teacher: teacher
+                                  };
+                                  
+                                  let cleanTeacherForSet = teacher.replace(/^(cô|thầy|gv|gvcn)\s*[:\-\.]?\s+/ig, "").trim();
+                                  let splitT = cleanTeacherForSet.split(/[\/\-,\+\(\)]/).map(t => t.trim()).filter(t => t !== "");
+                                  splitT.forEach(t => {
+                                      if (hasLetterRegex.test(t)) teachersSet.add(t);
+                                  });
+                             }
                           }
                       }
                       
@@ -386,6 +417,9 @@
       currentQuery = mode === 'teacher' ? document.getElementById('teacherInput').value.trim() : document.getElementById('classInput').value.trim().toUpperCase();
       if (!currentQuery) { alert("Vui lòng nhập từ khóa!"); return; }
 
+      // CHUYỂN TỪ DICT SANG ARRAY SAU KHI ĐÃ GHI ĐÈ XONG XUÔI
+      var allTimetableEvents = Object.values(allTimetableDict);
+
       var days = ["Hai", "Ba", "Tư", "Năm", "Sáu"];
       var grid = {}; 
       
@@ -393,7 +427,6 @@
       allTimetableEvents.forEach(e => periodsSet.add(e.period));
       periodsSet.forEach(p => grid[p] = {"Hai": "", "Ba": "", "Tư": "", "Năm": "", "Sáu": ""});
       
-      // ÁP DỤNG THỜI GIAN CỨNG NẾU CHỈ CÓ TIỂU HỌC
       if (isOnlyPrimary) {
           allTimeMaps["1"] = "08:15 - 08:50";
           allTimeMaps["2"] = "08:55 - 09:30";
@@ -482,7 +515,6 @@
         days.forEach(d => { html += `<td>${grid[p][d]}</td>`; });
         html += '</tr>';
         
-        // CÚ PHÁP CHÈN DÒNG NGHỈ ĐẶC THÙ CHO TIỂU HỌC
         if (isOnlyPrimary) {
             if (p === "2") html += '<tr class="break-row break-small"><td colspan="6">🍵 NGHỈ GIẢI LAO (09:30 - 09:45) 🍵</td></tr>';
             if (p === "4") html += '<tr class="break-row"><td colspan="6">🍲 NGHỈ TRƯA 🍲</td></tr>';
