@@ -164,7 +164,7 @@
     <div class="control-panel">
       <label for="excelUpload" class="upload-btn">☁️ Tải lên các File TKB (Tiểu học, THCS, THPT)</label>
       <input type="file" id="excelUpload" accept=".xlsx, .xls" multiple />
-      <div id="uploadStatus" style="margin-top: 18px; font-weight: 800; color: #0f766e; font-size: 16px;">👋 Xin chào! Hãy chọn cùng lúc nhiều file TKB để tải lên nhé.</div>
+      <div id="uploadStatus" style="margin-top: 18px; font-weight: 800; color: #0f766e; font-size: 16px;">👋 Xin chào! Hãy chọn cùng lúc nhiều file TKB để tải lên nhé. (Lưu ý: Chỉ giữ lại các Sheet TKB chính thức)</div>
 
       <div class="search-box" id="searchBox">
         <input type="text" id="teacherInput" placeholder="Tên Giáo viên / Trợ giảng..." list="teacherList">
@@ -445,6 +445,7 @@
       });
     }
 
+    // THUẬT TOÁN TÌM KIẾM V2.1 - EXACT MATCH (CHÍNH XÁC TUYỆT ĐỐI)
     function processSearch(mode) {
       currentQuery = mode === 'teacher' ? document.getElementById('teacherInput').value.trim() : document.getElementById('classInput').value.trim().toUpperCase();
       if (!currentQuery) { alert("Vui lòng nhập từ khóa!"); return; }
@@ -465,9 +466,11 @@
         if (mode === 'teacher') {
             let queryLower = currentQuery.toLowerCase();
             let cleanTeacher = event.teacher.toLowerCase().replace(/^(cô|thầy|gv|gvcn|gvgd)\s*[:\-\.]?\s+/ig, "").trim();
+            // Tách các giáo viên dạy chung để so khớp
             let teachersInCell = cleanTeacher.split(/[\/\-,\+&\(\)]/).map(t => t.trim()).filter(t => t !== "");
             
-            if (cleanTeacher === queryLower || teachersInCell.includes(queryLower) || cleanTeacher.includes(queryLower)) {
+            // So khớp CHÍNH XÁC: Phải bằng đúng tên (vd "Ngọc" = "Ngọc", không ra "Bảo Ngọc")
+            if (cleanTeacher === queryLower || teachersInCell.includes(queryLower)) {
                 isMatch = true;
             }
         } else if (mode === 'class') {
@@ -553,7 +556,6 @@
             if (p === "6") html += '<tr class="break-row break-small"><td colspan="6" contenteditable="true">🥪 NGHỈ GIẢI LAO - ĂN XẾ (14:45 - 15:05) 🥪</td></tr>';
         } else {
             if (p === "4" || p === "5") {
-               // Xử lý nghỉ trưa linh động cho file chung
                if(p === "4" && periods.includes("5") && grid["5"] && (grid["5"]["Hai"] !== "" || grid["5"]["Ba"] !== "")) {
                    html += '<tr class="break-row"><td colspan="6" contenteditable="true">⭐ NGHỈ TRƯA ⭐</td></tr>';
                } else if (p === "5" && !periods.includes("5")) {
