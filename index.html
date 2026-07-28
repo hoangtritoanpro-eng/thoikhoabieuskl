@@ -2,7 +2,6 @@
 <html>
 <head>
   <base target="_top">
-  <!-- Thư viện xử lý Excel và chụp ảnh -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Pangolin&display=swap" rel="stylesheet">
@@ -54,11 +53,7 @@
     .editable-cell:hover { background-color: rgba(255, 255, 255, 0.8) !important; cursor: text; box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.1);}
     .editable-cell:focus { background-color: #ffffff !important; box-shadow: inset 0 0 0 2px #0ea5e9;}
 
-    /* ==================================================
-       BỘ SƯU TẬP 5 GIAO DIỆN (THEMES)
-       ================================================== */
-       
-    /* 1. GIAO DIỆN BẢN CHUẨN (XANH MINT) */
+    /* THEMES */
     .theme-simple { background: white; padding: 25px; border-radius: 20px; border: 2px solid #ccfbf1; position: relative; }
     .theme-simple .tkb-title { color: #0f766e; font-size: 28px; font-weight: 900; text-align: center; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; }
     .theme-simple .info-subtitle { display: none; }
@@ -68,15 +63,11 @@
     .theme-simple th { color: #fff; font-weight: 800; font-size: 17px; background: #14b8a6; }
     .theme-simple td { font-size: 16px; line-height: 1.5; color: #1e293b; font-weight: 800; background: #fff;}
     .theme-simple .time-col { color: #0f766e; background: #f0fdf4;} 
-    /* Màu nghỉ trưa đã được làm nổi bật */
     .theme-simple .break-row td { background-color: #fef3c7; font-weight: 900; color: #d97706; letter-spacing: 3px; font-size: 15px;}
     .theme-simple .break-small td { background-color: #ffedd5; color: #c2410c; letter-spacing: 2px; font-size: 14px;}
     .theme-simple td span.sub-text { font-size: 14px; color: #475569; font-weight: 600; }
 
-    /* 2. GIAO DIỆN BẢN SKETCHNOTE (VÀNG SÁNG TẠO) */
-    .theme-infographic {
-      background-color: #fffde7; background-image: linear-gradient(#fde68a 2px, transparent 2px), linear-gradient(90deg, #fde68a 2px, transparent 2px); background-size: 30px 30px; padding: 65px 50px; border: 4px solid #0f766e; border-radius: 20px; font-family: 'Pangolin', cursive; position: relative; overflow: hidden;
-    }
+    .theme-infographic { background-color: #fffde7; background-image: linear-gradient(#fde68a 2px, transparent 2px), linear-gradient(90deg, #fde68a 2px, transparent 2px); background-size: 30px 30px; padding: 65px 50px; border: 4px solid #0f766e; border-radius: 20px; font-family: 'Pangolin', cursive; position: relative; overflow: hidden; }
     .theme-infographic .tkb-title { text-align: center; font-size: 45px; color: #0f766e; margin: 0 0 5px 0; text-shadow: 3px 3px 0px #ccfbf1; position: relative; z-index: 2;}
     .theme-infographic .info-subtitle { text-align: center; font-size: 20px; color: #115e59; margin-bottom: 30px; position: relative; z-index: 2;}
     .theme-infographic table { width: 100%; border-collapse: separate; border-spacing: 12px; position: relative; z-index: 2;}
@@ -91,8 +82,6 @@
     .theme-infographic .break-row td { background-color: #fb923c !important; color: white; text-shadow: 2px 2px 0 #c2410c; letter-spacing: 4px; font-size: 22px;}
     .theme-infographic .break-small td { background-color: #fde047 !important; color: #854d0e; text-shadow: none; letter-spacing: 2px; font-size: 18px;}
     .theme-infographic td span.sub-text { font-size: 16px; color: #334155; font-weight: 700; } 
-    
-    /* Doodle stickers cho Sketchnote */
     .doodle { display: none; }
     .theme-infographic .doodle { display: block; position: absolute; z-index: 1; user-select: none; }
     .d1 { top: 20px; left: 20px; font-size: 45px; transform: rotate(-15deg); } 
@@ -104,7 +93,6 @@
     .d7 { bottom: 220px; left: 15px; font-size: 40px; transform: rotate(-10deg); } 
     .d8 { bottom: 220px; right: 15px; font-size: 45px; transform: rotate(15deg); } 
 
-    /* 3. GIAO DIỆN CHUYÊN NGHIỆP (XANH NAVY) */
     .theme-blue { background: #f8fafc; padding: 25px; border-radius: 20px; border: 2px solid #bae6fd; position: relative; }
     .theme-blue .tkb-title { color: #0369a1; font-size: 28px; font-weight: 900; text-align: center; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px;}
     .theme-blue .info-subtitle { display: none; }
@@ -118,7 +106,6 @@
     .theme-blue .break-small td { background-color: #e0f2fe; color: #0284c7; letter-spacing: 2px; font-size: 14px;}
     .theme-blue td span.sub-text { font-size: 14px; color: #64748b; font-weight: 600; }
 
-    /* 4. GIAO DIỆN KẸO NGỌT (HỒNG PASTEL) */
     .theme-pink { background: #fdf2f8; padding: 25px; border-radius: 20px; border: 3px dashed #fbcfe8; position: relative; }
     .theme-pink .tkb-title { color: #be185d; font-size: 30px; font-weight: 900; text-align: center; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; font-family: 'Pangolin', cursive;}
     .theme-pink .info-subtitle { display: none; }
@@ -132,7 +119,6 @@
     .theme-pink .break-small td { background-color: #fce7f3; color: #be185d; letter-spacing: 2px; font-size: 14px; border: none;}
     .theme-pink td span.sub-text { font-size: 14px; color: #9d174d; font-weight: 600; }
 
-    /* 5. GIAO DIỆN THIÊN NHIÊN (XANH LÁ MỘC) */
     .theme-nature { background: #fefce8; padding: 25px; border-radius: 20px; border: 2px solid #d9f99d; position: relative; }
     .theme-nature .tkb-title { color: #4d7c0f; font-size: 28px; font-weight: 900; text-align: center; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; }
     .theme-nature .info-subtitle { display: none; }
@@ -149,7 +135,6 @@
     .tools { display: none; justify-content: center; gap: 15px; margin-top: 30px; }
     .btn-excel { background-color: #10b981; box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);}
     .btn-excel:hover { background-color: #059669; }
-    
     .edit-hint { text-align: center; color: #0ea5e9; font-weight: 800; font-size: 16px; margin-top: 15px; display: none; animation: float 3s ease-in-out infinite; }
   </style>
 </head>
@@ -164,7 +149,7 @@
     <div class="control-panel">
       <label for="excelUpload" class="upload-btn">☁️ Tải lên các File TKB (Tiểu học, THCS, THPT)</label>
       <input type="file" id="excelUpload" accept=".xlsx, .xls" multiple />
-      <div id="uploadStatus" style="margin-top: 18px; font-weight: 800; color: #0f766e; font-size: 16px;">👋 Xin chào! Hãy chọn cùng lúc nhiều file TKB để tải lên nhé. (Lưu ý: Chỉ giữ lại các Sheet TKB chính thức)</div>
+      <div id="uploadStatus" style="margin-top: 18px; font-weight: 800; color: #0f766e; font-size: 16px;">👋 Xin chào! Hãy chọn cùng lúc nhiều file TKB để tải lên nhé.</div>
 
       <div class="search-box" id="searchBox">
         <input type="text" id="teacherInput" placeholder="Tên Giáo viên / Trợ giảng..." list="teacherList">
@@ -251,12 +236,13 @@
         document.getElementById('searchBox').style.display = "flex";
 
       } catch (error) {
+        console.error(error);
         alert("Lỗi khi đọc file: Vui lòng kiểm tra lại cấu trúc Excel.");
         document.getElementById('uploadStatus').innerText = "❌ Lỗi đọc file. Vui lòng thử lại.";
       }
     });
 
-    // LÕI XỬ LÝ V2.0 - HỖ TRỢ ĐA CẤP HỌC & MERGE CELLS
+    // LÕI XỬ LÝ V3.0 - ĐIỀU HƯỚNG CỘT THÔNG MINH CHO TỪNG LỚP
     function processSingleFile(file, teachersSet, classesSet) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -270,7 +256,7 @@
               let excelData = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: "", raw: true}); 
               const merges = sheet['!merges'] || []; 
               
-              // TỰ ĐỘNG KHÔI PHỤC CÁC Ô BỊ GỘP (MERGE CELLS)
+              // KHÔI PHỤC MERGE CELLS
               merges.forEach(merge => {
                   let startRow = merge.s.r; let endRow = merge.e.r;
                   let startCol = merge.s.c; let endCol = merge.e.c;
@@ -285,155 +271,173 @@
                   }
               });
 
-              let headerRowIndex = -1; let startCol = -1; let step = 2; 
-              let gvOffset = 1; let tgOffset = -1; 
               let isPrimarySheet = true; 
-
-              // Nhận diện Cấp học 
               let topRowsText = excelData.slice(0, 15).flat().join(" ").toUpperCase();
               if (topRowsText.includes("TRUNG HỌC") || topRowsText.includes("THCS") || topRowsText.includes("THPT")) {
                   isPrimarySheet = false;
                   isOnlyPrimary = false; 
               }
 
-              // DÒ TÌM HEADER THÔNG MINH
-              for (let r = 0; r < Math.min(25, excelData.length); r++) {
-                  let row = excelData[r] || [];
-                  let monIndex = -1;
-                  for (let i = 0; i < row.length; i++) {
-                      let cellVal = row[i] ? row[i].toString().trim().toUpperCase() : "";
-                      if (["MÔN", "MÔN HỌC", "SUBJECT"].includes(cellVal)) { monIndex = i; break; }
-                  }
+              let r = 0;
+              // XỬ LÝ NHIỀU BẢNG TKB TRONG CÙNG 1 SHEET
+              while (r < excelData.length) {
+                  let headerRowIndex = -1;
+                  let classConfigs = [];
                   
-                  if (monIndex !== -1) {
-                      for (let j = 1; j <= 3; j++) {
-                          let nextCell = row[monIndex+j] ? row[monIndex+j].toString().trim().toUpperCase() : "";
-                          if (["GVGD", "GV", "GIÁO VIÊN", "TEACHER", "GVCN"].includes(nextCell) || nextCell.includes("GV")) {
-                              headerRowIndex = r; startCol = monIndex; gvOffset = j; break;
-                          }
+                  // Tìm Header Row
+                  for (; r < excelData.length; r++) {
+                      let row = excelData[r] || [];
+                      let hasMon = false; let hasGv = false;
+                      for (let i = 0; i < row.length; i++) {
+                          let cellVal = row[i] ? row[i].toString().trim().toUpperCase() : "";
+                          if (["MÔN", "MÔN HỌC", "SUBJECT"].includes(cellVal)) hasMon = true;
+                          if (["GVGD", "GV", "GIÁO VIÊN", "TEACHER", "GVCN"].includes(cellVal) || cellVal.includes("GV")) hasGv = true;
                       }
-                      
-                      if (headerRowIndex !== -1) {
-                          for (let j = 1; j <= 4; j++) {
-                               let lookAhead = row[monIndex+j] ? row[monIndex+j].toString().trim().toUpperCase() : "";
-                               if (["TG", "GVTG", "TRỢ GIẢNG", "TA", "ASSISTANT", "LAB"].includes(lookAhead)) { tgOffset = j; }
+                      if (hasMon && hasGv) {
+                          headerRowIndex = r;
+                          // Lưu cấu trúc cột (Môn, GV, TG) ĐỘC LẬP cho từng Lớp
+                          for (let i = 0; i < row.length; i++) {
+                              let cellVal = row[i] ? row[i].toString().trim().toUpperCase() : "";
+                              if (["MÔN", "MÔN HỌC", "SUBJECT"].includes(cellVal)) {
+                                  let gvCol = -1; let tgCol = -1;
+                                  for (let j = 1; j <= 3; j++) {
+                                      if (i + j >= row.length) break;
+                                      let nextCell = row[i+j] ? row[i+j].toString().trim().toUpperCase() : "";
+                                      if (["MÔN", "MÔN HỌC", "SUBJECT"].includes(nextCell)) break; 
+                                      if (gvCol === -1 && (["GVGD", "GV", "GIÁO VIÊN", "TEACHER", "GVCN"].includes(nextCell) || nextCell.includes("GV"))) {
+                                          gvCol = i + j;
+                                      }
+                                      if (tgCol === -1 && (["TG", "GVTG", "TRỢ GIẢNG", "TA", "ASSISTANT", "LAB"].includes(nextCell))) {
+                                          tgCol = i + j;
+                                      }
+                                  }
+                                  if (gvCol !== -1) classConfigs.push({ monCol: i, gvCol: gvCol, tgCol: tgCol, className: "" });
+                              }
                           }
-                          for (let i = monIndex + 1; i < row.length; i++) {
-                              let tempVal = row[i] ? row[i].toString().trim().toUpperCase() : "";
-                              if (["MÔN", "MÔN HỌC", "SUBJECT"].includes(tempVal)) { step = i - monIndex; break; }
-                          }
-                          if (step === -1) step = (tgOffset !== -1) ? 3 : 2;
                           break;
                       }
                   }
-              }
-
-              if (headerRowIndex === -1) return; 
-
-              // TÌM LỚP HỌC (Bao phủ cả Lớp QT, Lớp tự nhiên, xã hội...)
-              let localClassesMap = {};
-              for (let r = headerRowIndex - 1; r >= Math.max(0, headerRowIndex - 8); r--) {
-                  let row = excelData[r] || [];
-                  for (let c = startCol; c < row.length; c += step) {
-                      if (localClassesMap[c]) continue; 
-                      
+                  
+                  if (headerRowIndex === -1) break; 
+                  
+                  // Tìm Tên Lớp cho từng cấu trúc cột
+                  classConfigs.forEach(config => {
                       let val = "";
-                      for(let offset = 0; offset < step; offset++) {
-                          if (row[c + offset]) {
-                              let tempVal = row[c + offset].toString().trim();
-                              if (tempVal && !tempVal.toUpperCase().includes("LỚP") && !/^20\d{2}/.test(tempVal)) { val = tempVal; break; }
-                          }
-                      }
-                      if (!val) val = row[c] ? row[c].toString().trim() : "";
-                      if (typeof row[c] === 'number' && row[c] > 40000 && row[c] < 50000) val = ExcelDateToJSDate(row[c]);
-                      if (val.toUpperCase().includes("LỚP")) val = val.split('\n')[0].toUpperCase().replace(/L[ỚO]P/g, "").trim();
-                      
-                      let isDate = /^20\d{2}/.test(val) || /^(\d{1,2})[\/\-](\d{1,2})[\/\-]20\d{2}/.test(val);
-                      if (isDate || val.includes("CN:") || val.includes("GVCN") || val.toUpperCase() === "LỚP") continue;
-                      
-                      let isValidClass = /^([1-9]|1[0-2])(?!\d)/i.test(val) || /^(Lá|Chồi|Mầm|Pre|Nemo|UK|INT)/i.test(val);
-                      if (isValidClass && val.length < 25) {
-                          localClassesMap[c] = val.toUpperCase();
-                          classesSet.add(val.toUpperCase());
-                      }
-                  }
-              }
-
-              // QUÉT LỊCH DẠY
-              let dataStartIndex = headerRowIndex + 1;
-              let currentDay = ""; let currentBuoi = "sáng"; let maxMorningPeriod = 4; 
-              const hasLetterRegex = /[a-zA-ZÀ-ỹ\u00C0-\u1EF9]/;
-
-              for (let r = dataStartIndex; r < excelData.length; r++) {
-                  let row = excelData[r] || [];
-                  let rowTextCheck = row.slice(0, 5).join(" ").toUpperCase();
-                  if (rowTextCheck.includes("TỔNG") || rowTextCheck.includes("GHI CHÚ") || rowTextCheck.includes("THỐNG KÊ") || rowTextCheck.includes("ESL (6)")) break; 
-
-                  for(let c=0; c<=3; c++) {
-                      let val = row[c] ? row[c].toString().trim() : "";
-                      if (["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy"].some(d => val.includes(d))) { 
-                          currentDay = val.replace("Thứ ", "").replace("Thứ", "").trim(); break; 
-                      }
-                  }
-
-                  if (isPrimarySheet) {
-                      for(let c=0; c<=3; c++) {
-                          let val = row[c] ? row[c].toString().trim().toLowerCase() : "";
-                          if (val.includes("sáng") || val.includes("chiều")) { 
-                              currentBuoi = val.includes("chiều") ? "chiều" : "sáng"; break; 
-                          }
-                      }
-                  }
-
-                  let periodStr = ""; let timeStr = "";
-                  let scanLimit = startCol > 0 ? startCol : 5; 
-                  for (let c=0; c < scanLimit; c++) {
-                      let val = row[c] ? row[c].toString().trim() : "";
-                      let pMatch = val.match(/^(?:Tiết|T|Ca)?\s*([1-9]|1[0-2])$/i);
-                      if (!periodStr && pMatch) periodStr = pMatch[1];
-                      if (!timeStr && /^\d{1,2}[:h]\d{2}/i.test(val)) timeStr = val; 
-                  }
-
-                  if (periodStr && currentDay) {
-                      let absolutePeriod = parseInt(periodStr);
-                      
-                      if (isPrimarySheet && currentBuoi === "sáng" && absolutePeriod > maxMorningPeriod) {
-                          maxMorningPeriod = absolutePeriod;
-                      }
-                      if (isPrimarySheet && currentBuoi === "chiều" && absolutePeriod < 5) {
-                          absolutePeriod += maxMorningPeriod;
-                      }
-                      
-                      absolutePeriod = absolutePeriod.toString();
-                      if (timeStr && !allTimeMaps[absolutePeriod]) allTimeMaps[absolutePeriod] = timeStr;
-
-                      for (let colIndex in localClassesMap) {
-                          let c = parseInt(colIndex);
-                          let subject = row[c] ? row[c].toString().trim() : "";
-                          let teacher = row[c + gvOffset] ? row[c + gvOffset].toString().trim() : "";
-                          
-                          if (tgOffset !== -1) {
-                              let assistant = row[c + tgOffset] ? row[c + tgOffset].toString().trim() : "";
-                              if (assistant && !/^[\d\.\-]+$/.test(assistant) && !assistant.toLowerCase().includes("phòng")) {
-                                  teacher = teacher ? (teacher + " & " + assistant) : assistant;
+                      for (let up = headerRowIndex - 1; up >= Math.max(0, headerRowIndex - 8); up--) {
+                          let row = excelData[up] || [];
+                          let endC = config.tgCol !== -1 ? config.tgCol : config.gvCol;
+                          for (let offsetC = config.monCol; offsetC <= endC; offsetC++) {
+                              let tempVal = row[offsetC] ? row[offsetC].toString().trim() : "";
+                              if (tempVal && !tempVal.toUpperCase().includes("LỚP") && !/^20\d{2}/.test(tempVal)) {
+                                  val = tempVal; break;
                               }
                           }
+                          if (!val && row[config.monCol]) val = row[config.monCol].toString().trim();
                           
-                          let isGarbage = !hasLetterRegex.test(subject) && !hasLetterRegex.test(teacher);
-                          if (/^\d+$/.test(subject.toString().trim()) || /^\d+$/.test(teacher.toString().trim())) isGarbage = true;
-
-                          if ((subject || teacher) && !isGarbage) {
-                              let finalClassName = localClassesMap[c];
-                              let eventKey = `${finalClassName}_${currentDay}_${absolutePeriod}`;
-                              
-                              while (allTimetableDict[eventKey]) { eventKey += "_dup"; }
-                              
-                              allTimetableDict[eventKey] = { day: currentDay, period: absolutePeriod, className: finalClassName, subject: subject, teacher: teacher };
-                              
-                              let cleanTeacherForSet = teacher.replace(/^(cô|thầy|gv|gvcn|gvgd)\s*[:\-\.]?\s+/ig, "").trim();
-                              let splitT = cleanTeacherForSet.split(/[\/\-,\+&\(\)]/).map(t => t.trim()).filter(t => t !== "");
-                              splitT.forEach(t => { if (hasLetterRegex.test(t) && t.length > 1) teachersSet.add(t); });
+                          if (val) {
+                              if (typeof val === 'number' && val > 40000 && val < 50000) val = ExcelDateToJSDate(val);
+                              if (val.toUpperCase().includes("LỚP")) val = val.split('\n')[0].toUpperCase().replace(/L[ỚO]P/g, "").trim();
+                              let isDate = /^20\d{2}/.test(val) || /^(\d{1,2})[\/\-](\d{1,2})[\/\-]20\d{2}/.test(val);
+                              if (!isDate && !val.includes("CN:") && !val.includes("GVCN") && val.toUpperCase() !== "LỚP") {
+                                  let isValidClass = /^([1-9]|1[0-2])(?!\d)/i.test(val) || /^(Lá|Chồi|Mầm|Pre|Nemo|UK|INT)/i.test(val);
+                                  if (isValidClass && val.length < 25) {
+                                      config.className = val.toUpperCase();
+                                      classesSet.add(config.className);
+                                      break; 
+                                  }
+                              }
+                              val = ""; 
                           }
+                      }
+                  });
+                  
+                  classConfigs = classConfigs.filter(cfg => cfg.className !== "");
+                  
+                  // Bắt đầu Quét Data của Bảng hiện tại
+                  let currentDay = ""; let currentBuoi = "sáng"; let maxMorningPeriod = 4; 
+                  let lastTeacher = {}; // Khôi phục logic kế thừa Tên Giáo Viên cho Tiểu Học
+                  
+                  r = headerRowIndex + 1; 
+                  for (; r < excelData.length; r++) {
+                      let row = excelData[r] || [];
+                      let rowTextCheck = row.slice(0, 5).join(" ").toUpperCase();
+                      
+                      if (rowTextCheck.includes("TỔNG") || rowTextCheck.includes("GHI CHÚ") || rowTextCheck.includes("THỐNG KÊ") || rowTextCheck.includes("ESL (6)")) break; 
+                      
+                      // Tránh quét tràn sang bảng Header của khối khác
+                      let isNextHeader = false;
+                      for(let i=0; i<Math.min(10, row.length); i++) {
+                          if (row[i] && ["MÔN", "MÔN HỌC", "SUBJECT"].includes(row[i].toString().trim().toUpperCase())) isNextHeader = true;
+                      }
+                      if (isNextHeader) { r--; break; }
+
+                      for(let c=0; c<=3; c++) {
+                          let val = row[c] ? row[c].toString().trim() : "";
+                          if (["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy"].some(d => val.includes(d))) { 
+                              currentDay = val.replace("Thứ ", "").replace("Thứ", "").trim(); break; 
+                          }
+                      }
+
+                      if (isPrimarySheet) {
+                          for(let c=0; c<=3; c++) {
+                              let val = row[c] ? row[c].toString().trim().toLowerCase() : "";
+                              if (val.includes("sáng") || val.includes("chiều")) { 
+                                  currentBuoi = val.includes("chiều") ? "chiều" : "sáng"; break; 
+                              }
+                          }
+                      }
+
+                      let periodStr = ""; let timeStr = "";
+                      for (let c=0; c < 5; c++) {
+                          let val = row[c] ? row[c].toString().trim() : "";
+                          let pMatch = val.match(/^(?:Tiết|T|Ca)?\s*([1-9]|1[0-2])$/i);
+                          if (!periodStr && pMatch) periodStr = pMatch[1];
+                          if (!timeStr && /^\d{1,2}[:h]\d{2}/i.test(val)) timeStr = val; 
+                      }
+
+                      if (periodStr && currentDay) {
+                          let absolutePeriod = parseInt(periodStr);
+                          
+                          if (isPrimarySheet && currentBuoi === "sáng" && absolutePeriod > maxMorningPeriod) maxMorningPeriod = absolutePeriod;
+                          if (isPrimarySheet && currentBuoi === "chiều" && absolutePeriod < 5) absolutePeriod += maxMorningPeriod;
+                          
+                          absolutePeriod = absolutePeriod.toString();
+                          if (timeStr && !allTimeMaps[absolutePeriod]) allTimeMaps[absolutePeriod] = timeStr;
+
+                          classConfigs.forEach(config => {
+                              let subject = row[config.monCol] ? row[config.monCol].toString().trim() : "";
+                              let teacher = row[config.gvCol] ? row[config.gvCol].toString().trim() : "";
+                              
+                              if (config.tgCol !== -1) {
+                                  let assistant = row[config.tgCol] ? row[config.tgCol].toString().trim() : "";
+                                  if (assistant && !/^[\d\.\-]+$/.test(assistant) && !assistant.toLowerCase().includes("phòng")) {
+                                      teacher = teacher ? (teacher + " & " + assistant) : assistant;
+                                  }
+                              }
+                              
+                              // Logic kế thừa nếu ô GV bị bỏ trống (GVCN dạy nhiều tiết)
+                              if (isPrimarySheet) {
+                                  if (subject && !teacher) teacher = lastTeacher[config.className] || "";
+                                  if (teacher) lastTeacher[config.className] = teacher;
+                                  else if (!subject) lastTeacher[config.className] = "";
+                              }
+                              
+                              let isGarbage = !/[a-zA-ZÀ-ỹ\u00C0-\u1EF9]/.test(subject) && !/[a-zA-ZÀ-ỹ\u00C0-\u1EF9]/.test(teacher);
+                              if (/^\d+$/.test(subject) || /^\d+$/.test(teacher)) isGarbage = true;
+
+                              if ((subject || teacher) && !isGarbage) {
+                                  let eventKey = `${config.className}_${currentDay}_${absolutePeriod}`;
+                                  while (allTimetableDict[eventKey]) { eventKey += "_dup"; }
+                                  
+                                  allTimetableDict[eventKey] = { day: currentDay, period: absolutePeriod, className: config.className, subject: subject, teacher: teacher };
+                                  
+                                  let cleanTeacherForSet = teacher.replace(/^(cô|thầy|gv|gvcn|gvgd)\s*[:\-\.]?\s+/ig, "").trim();
+                                  let splitT = cleanTeacherForSet.split(/[\/\-,\+&\(\)]/).map(t => t.trim()).filter(t => t !== "");
+                                  splitT.forEach(t => { if (/[a-zA-ZÀ-ỹ\u00C0-\u1EF9]/.test(t) && t.length > 1) teachersSet.add(t); });
+                              }
+                          });
+                      } else {
+                          if (isPrimarySheet && !periodStr) lastTeacher = {}; // Reset kế thừa nếu sang ngày mới
                       }
                   }
               }
@@ -445,10 +449,18 @@
       });
     }
 
-    // THUẬT TOÁN TÌM KIẾM V2.1 - EXACT MATCH (CHÍNH XÁC TUYỆT ĐỐI)
+    // TÌM KIẾM CHÍNH XÁC & BỔ SUNG GIỜ HỌC BỊ THIẾU
     function processSearch(mode) {
       currentQuery = mode === 'teacher' ? document.getElementById('teacherInput').value.trim() : document.getElementById('classInput').value.trim().toUpperCase();
       if (!currentQuery) { alert("Vui lòng nhập từ khóa!"); return; }
+
+      // Bổ sung Giờ Học chuẩn cho Tiểu học (Trường hợp Excel không ghi)
+      if (isOnlyPrimary && Object.keys(allTimeMaps).length === 0) {
+          allTimeMaps = {
+              "1": "08:15 - 08:50", "2": "08:55 - 09:30", "3": "09:45 - 10:20", "4": "10:25 - 11:00",
+              "5": "13:30 - 14:05", "6": "14:10 - 14:45", "7": "15:05 - 15:40", "8": "15:45 - 16:20"
+          };
+      }
 
       var allTimetableEvents = Object.values(allTimetableDict);
       var days = ["Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy"];
@@ -466,10 +478,8 @@
         if (mode === 'teacher') {
             let queryLower = currentQuery.toLowerCase();
             let cleanTeacher = event.teacher.toLowerCase().replace(/^(cô|thầy|gv|gvcn|gvgd)\s*[:\-\.]?\s+/ig, "").trim();
-            // Tách các giáo viên dạy chung để so khớp
             let teachersInCell = cleanTeacher.split(/[\/\-,\+&\(\)]/).map(t => t.trim()).filter(t => t !== "");
             
-            // So khớp CHÍNH XÁC: Phải bằng đúng tên (vd "Ngọc" = "Ngọc", không ra "Bảo Ngọc")
             if (cleanTeacher === queryLower || teachersInCell.includes(queryLower)) {
                 isMatch = true;
             }
@@ -503,7 +513,6 @@
           return days.some(d => grid[p] && grid[p][d] !== "");
       });
 
-      // Mặc định render 5 ngày từ Thứ 2 đến Thứ 6 như giao diện gốc
       currentResultGrid = { grid, timeMap: allTimeMaps, periods: filteredPeriods, days: ["Hai", "Ba", "Tư", "Năm", "Sáu"] };
       renderTable();
     }
