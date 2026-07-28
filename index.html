@@ -266,82 +266,86 @@
               const sheet = workbook.Sheets[sheetName];
               const excelData = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: "", raw: true}); 
               
-              let headerRowIndex = -1; let startCol = -1; let step = 2; let isPrimarySheet = false;
-              let gvOffset = 1; let tgOffset = -1; 
+              let headerRowIndex = -1; let startCol = -1; let isPrimarySheet = false;
 
               let topRowsText = excelData.slice(0, 10).flat().join(" ").toUpperCase();
               if (topRowsText.includes("TRUNG HỌC") || topRowsText.includes("THCS") || topRowsText.includes("THPT")) {
                   isOnlyPrimary = false;
               }
 
-              // 1. TÌM DÒNG HEADER "MÔN" VÀ XÁC ĐỊNH BƯỚC NHẢY (STEP) CHUẨN XÁC
+              // 1. TÌM DÒNG HEADER CÓ CHỨA "MÔN"
               for (let r = 0; r < Math.min(20, excelData.length); r++) {
                   let row = excelData[r] || [];
-                  let monIndices = [];
                   for (let i = 0; i < row.length; i++) {
                       let cellVal = row[i] ? row[i].toString().trim().toUpperCase() : "";
                       if (cellVal === "MÔN" || cellVal === "MÔN HỌC") {
-                          monIndices.push(i);
+                          headerRowIndex = r;
+                          startCol = i;
+                          isPrimarySheet = true;
+                          break;
                       }
                   }
-                  
-                  if (monIndices.length > 0) {
-                      headerRowIndex = r;
-                      startCol = monIndices[0];
-                      
-                      // Tính step động dựa trên khoảng cách giữa các chữ MÔN
-                      if (monIndices.length > 1) {
-                          step = monIndices[1] - monIndices[0];
-                      } else {
-                          step = 2; // Mặc định tiểu học là 2 (Môn - GV)
-                      }
-                      
-                      let nextCell = row[startCol + 1] ? row[startCol + 1].toString().trim().toUpperCase() : "";
-                      if (nextCell === "GVGD" || nextCell === "GV" || nextCell === "GIÁO VIÊN" || nextCell.includes("GV")) {
-                          gvOffset = 1;
-                      }
-                      
-                      if (step === 2 || step === 3) isPrimarySheet = true; else isPrimarySheet = false;
-                      break;
-                  }
+                  if (headerRowIndex !== -1) break;
               }
 
               if (headerRowIndex === -1) return; 
 
-              // 2. TÌM VÀ ÁNH XẠ TÊN LỚP CHUẨN XÁC CHO TỪNG CỘT
-              let localClassesMap = {};
-              for (let r = headerRowIndex - 1; r >= Math.max(0, headerRowIndex - 8); r--) {
+              // 2. ĐỊNH VỊ TÊN LỚP VÀ CẶP CỘT [MÔN, GVGD] THỰC TẾ
+              let localClassesMap = {}; // Lưu ý nghĩa: c_mon -> Tên lớp
+              let classColumns = [];
+
+              for (let r = headerRowIndex - 2; r <= headerRowIndex; r++) {
+                  if (r < 0) continue;
                   let row = excelData[r] || [];
-                  for (let c = startCol; c < row.length; c += step) {
-                      if (localClassesMap[c]) continue; 
-                      
+                  for (let c = 0; c < row.length; c++) {
                       let rawVal = row[c];
                       if (rawVal === undefined || rawVal === null || rawVal === "") continue;
-                      
                       let val = rawVal.toString().trim();
-                      
+
                       if (typeof rawVal === 'number' && rawVal > 40000 && rawVal < 50000) {
                           val = ExcelDateToJSDate(rawVal);
                       }
 
                       let upperVal = val.toUpperCase();
-                      if (upperVal.includes("LỚP") || upperVal.includes("KHỐI")) {
-                          val = upperVal.split('\n')[0].replace(/L[ỚO]P/g, "").replace(/KH[ỐO]I/g, "").trim();
-                      }
-                      
-                      let dMatch1 = val.match(/^20\d{2}[\/\-](\d{1,2})[\/\-](\d{1,2})/); 
-                      let dMatch2 = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-]20\d{2}/); 
-                      if (dMatch1) val = parseInt(dMatch1[2]) + "/" + parseInt(dMatch1[1]); 
-                      else if (dMatch2) val = parseInt(dMatch2[1]) + "/" + parseInt(dMatch2[2]);
-                      
-                      val = val.replace(/[\.\-]/g, "/");
-                      val = val.replace(/\s*\/\s*/g, "/");
+                      if (upperVal.includes("LỚP") || upperVal.includes("KHỐI") || upperVal.includes("/")) {
+                          // Bóc tách tên lớp (VD: Lớp 2/1 -> 2/1)
+                          let cleanClass = upperVal.split('\n')[0].replace(/L[ỚO]P/g, "").replace(/KH[ỐO]I/g, "").trim();
+                          cleanClass = cleanClass.replace(/[\.\-]/g, "/").replace(/\s*\/\s*/g, "/");
 
-                      let isValidClass = /^([1-9]|1[0-2])(?!\d)/i.test(val);
-                      
-                      if (isValidClass && !val.toUpperCase().includes("CN:")) {
-                          localClassesMap[c] = val.toUpperCase();
-                          classesSet.add(val.toUpperCase());
+                          let isValidClass = /^([1-9]|1[0-2])\/([1-9][0-9]*|[A-Z]+)/i.test(cleanClass) || /^([1-9]|1[0-2])(?!\d)/i.test(cleanClass);
+                          if (isValidClass && !cleanClass.includes("CN:")) {
+                              // TÌM CỘT MÔN GẦN NHẤT BÊN DƯỚI HOẶC CÙNG CỘT
+                              // Quy tắc Tiểu học: Cột Môn nằm ngay dưới hoặc gần cột chứa tên lớp
+                              for (let mc = Math.max(0, c - 1); mc <= Math.min(row.length - 1, c + 2); mc++) {
+                                  let headVal = excelData[headerRowIndex][mc] ? excelData[headerRowIndex][mc].toString().trim().toUpperCase() : "";
+                                  if (headVal === "MÔN" || headVal === "MÔN HỌC") {
+                                      localClassesMap[mc] = cleanClass;
+                                      classColumns.push(mc);
+                                      break;
+                                  }
+                              }
+                          }
+                      }
+                  }
+              }
+
+              // Nếu quét theo hàng không đủ, quét quét toàn bộ headerRowIndex tìm cột "MÔN" và dò ngược lên ô gần nhất
+              let headRow = excelData[headerRowIndex] || [];
+              for (let c = 0; c < headRow.length; c++) {
+                  let hVal = headRow[c] ? headRow[c].toString().trim().toUpperCase() : "";
+                  if ((hVal === "MÔN" || hVal === "MÔN HỌC") && !localClassesMap[c]) {
+                      // Dò ngược lên 3 dòng trên xem có tên lớp không
+                      for (let rr = headerRowIndex - 1; rr >= Math.max(0, headerRowIndex - 4); rr--) {
+                          let cellAbove = excelData[rr][c] ? excelData[rr][c].toString().trim() : "";
+                          if (cellAbove) {
+                              let cleanClass = cellAbove.toUpperCase().split('\n')[0].replace(/L[ỚO]P/g, "").trim();
+                              cleanClass = cleanClass.replace(/[\.\-]/g, "/").replace(/\s*\/\s*/g, "/");
+                              if (/^([1-9]|1[0-2])[\/].+/.test(cleanClass) || /^([1-9]|1[0-2])$/.test(cleanClass)) {
+                                  localClassesMap[c] = cleanClass;
+                                  classColumns.push(c);
+                                  break;
+                              }
+                          }
                       }
                   }
               }
@@ -392,14 +396,8 @@
                       for (let colIndex in localClassesMap) {
                           let c = parseInt(colIndex);
                           let subject = row[c] ? row[c].toString().trim() : "";
-                          let teacher = row[c + gvOffset] ? row[c + gvOffset].toString().trim() : "";
-                          
-                          if (tgOffset !== -1) {
-                              let assistant = row[c + tgOffset] ? row[c + tgOffset].toString().trim() : "";
-                              if (assistant && !/^[\d\.\-]+$/.test(assistant) && !assistant.toLowerCase().includes("lab") && !assistant.toLowerCase().includes("phòng")) {
-                                  teacher = teacher ? (teacher + " - " + assistant) : assistant;
-                              }
-                          }
+                          // Cột giáo viên (GVGD) luôn nằm ngay bên cạnh phải cột Môn (+1)
+                          let teacher = row[c + 1] ? row[c + 1].toString().trim() : "";
                           
                           if (isPrimarySheet) {
                               if (subject && !teacher) teacher = lastTeacher[c] || "";
@@ -408,18 +406,26 @@
                           }
 
                           let isGarbage = !hasLetterRegex.test(subject) && !hasLetterRegex.test(teacher);
-                          
                           if (/^\d+$/.test(subject.toString().trim()) || /^\d+$/.test(teacher.toString().trim())) {
                               isGarbage = true;
                           }
 
                           if ((subject || teacher) && !isGarbage) {
-                              let finalClassName = localClassesMap[c] || "[Lớp ẩn]";
-                              let eventKey = finalClassName === "[Lớp ẩn]" ? `[Lớp ẩn]_${currentDay}_${absolutePeriod}_${c}` : `${finalClassName}_${currentDay}_${absolutePeriod}`;
+                              let finalClassName = localClassesMap[c];
+                              if (!finalClassName) continue;
+
+                              let eventKey = `${finalClassName}_${currentDay}_${absolutePeriod}_${subject}_${teacher}`;
                               
-                              // Ưu tiên sheet đầu tiên để lấy lịch chuẩn xác không bị đè lệch
-                              if (!allTimetableDict[eventKey] || allTimetableDict[eventKey].className === "[Lớp ẩn]") {
-                                  allTimetableDict[eventKey] = {
+                              // Lưu sự kiện chuẩn xác vào từ điển
+                              let uniqueKey = `${finalClassName}_${currentDay}_${absolutePeriod}`;
+                              // Nếu trùng tiết nhưng khác môn (tiết ghép), gộp lại
+                              if (allTimetableDict[uniqueKey] && allTimetableDict[uniqueKey].subject !== subject) {
+                                  allTimetableDict[uniqueKey].subject += " / " + subject;
+                                  if (!allTimetableDict[uniqueKey].teacher.includes(teacher)) {
+                                      allTimetableDict[uniqueKey].teacher += " / " + teacher;
+                                  }
+                              } else if (!allTimetableDict[uniqueKey]) {
+                                  allTimetableDict[uniqueKey] = {
                                       day: currentDay,
                                       period: absolutePeriod,
                                       className: finalClassName,
@@ -433,6 +439,7 @@
                               splitT.forEach(t => {
                                   if (hasLetterRegex.test(t)) teachersSet.add(t);
                               });
+                              classesSet.add(finalClassName);
                           }
                       }
                   } else {
